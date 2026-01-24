@@ -1,0 +1,96 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
+
+:root {
+  /* Strict Monochrome & Soft UI */
+  --background: #FFFFFF;
+  --foreground: #000000;
+  --surface: #F9F9F9;
+  --surface-hover: #FFFFFF;
+  --primary: #000000;
+  --primary-hover: #171717;
+  --text-primary: #000000;
+  --text-secondary: #666666;
+  --border: #E5E5E5;
+  --active-bg: #FFFFFF;
+  --active-text: #000000;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  color: var(--text-primary);
+  background: var(--background);
+  font-family: 'Inter', 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* 代码块样式 */
+code, pre {
+  font-family: 'Fira Code', 'JetBrains Mono', monospace;
+}
+
+pre {
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 1rem;
+  border: 1px solid var(--border);
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Gemini 风格 Focus 投影 */
+  .shadow-gemini-focus {
+    box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.1), 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+  }
+}
+
+/* 输入框 Focus 样式 */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none !important;
+  ring: 0 !important;
+  box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.1), 0 2px 12px 0 rgba(0, 0, 0, 0.05) !important;
+  background-color: #FFFFFF !important;
+}
+
+/* 呼吸灯动画 - 更优雅的脉冲效果 */
+@keyframes breathe {
+  0%, 100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+/* 打字机光标闪烁 */
+@keyframes blink {
+  0%, 49% {
+    opacity: 1;
+  }
+  50%, 100% {
+    opacity: 0;
+  }
+}
+
+.animate-breathe {
+  animation: breathe 2s ease-in-out infinite;
+}
+
+.animate-blink {
+  animation: blink 1s step-end infinite;
+}
