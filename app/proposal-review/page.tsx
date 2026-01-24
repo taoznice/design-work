@@ -419,9 +419,9 @@ export default function ProposalReviewPage() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
           {/* 左侧：图片上传和AI判断 */}
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-6">
             {/* 记忆标签墙 */}
             {enableMemory && (memory.preferences.goodPatterns.length > 0 || memory.preferences.badPatterns.length > 0) && (
               <div className="border border-gemini-border rounded-3xl p-4 bg-gemini-surface">

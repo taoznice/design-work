@@ -426,14 +426,14 @@ export default function AIRadarPage() {
 
   return (
     <div className="h-full bg-gemini-bg text-gemini-text">
-      <div className="max-w-6xl mx-auto p-8">
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
+      <div className="max-w-6xl mx-auto p-4 md:p-8">
+        <div className="mb-6 md:mb-8">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h1 className="text-2xl font-semibold text-gemini-text mb-2">
+              <h1 className="text-xl md:text-2xl font-semibold text-gemini-text mb-2">
                 AI Radar (设计雷达)
               </h1>
-              <p className="text-sm text-gemini-text-secondary">
+              <p className="text-xs md:text-sm text-gemini-text-secondary">
                 自动聚合科技新闻，AI 生成设计情报日报
               </p>
             </div>
@@ -441,13 +441,13 @@ export default function AIRadarPage() {
               onClick={() => loadData(true)}
               disabled={isFetching || isAnalyzing}
               className={`
-                flex items-center gap-2 px-6 py-2.5 bg-black text-white text-sm font-medium
-                rounded-full transition-all
-                ${isFetching || isAnalyzing ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-800 shadow-gemini-sm'}
+                flex items-center justify-center gap-2 px-4 md:px-6 py-2 md:py-2.5 bg-black text-white text-xs md:text-sm font-medium
+                rounded-full transition-all w-full md:w-auto
+                ${isFetching || isAnalyzing ? 'opacity-50 cursor-not-allowed bg-gray-400' : 'hover:bg-gray-800 shadow-gemini-sm'}
               `}
             >
-              <Sparkles size={16} />
-              {isFetching || isAnalyzing ? '获取中...' : '刷新新闻'}
+              <Sparkles size={16} className={isFetching || isAnalyzing ? 'animate-spin' : ''} />
+              {isFetching || isAnalyzing ? '正在分析数据...' : '刷新新闻'}
             </button>
           </div>
         </div>
@@ -458,17 +458,19 @@ export default function AIRadarPage() {
             <div className="text-center">
               <div className="mb-4">
                 <div className="inline-flex items-center gap-3">
-                  <span className="text-sm text-gemini-text-secondary">
-                    正在搜集全球情报并翻译...
+                  <span className="text-sm font-medium text-gemini-text">
+                    正在分析数据...
                   </span>
                   <div className="flex gap-1.5 items-center">
-                    <div className="w-1.5 h-1.5 bg-black rounded-full animate-breathe" style={{ animationDelay: '0ms' }}></div>
-                    <div className="w-1.5 h-1.5 bg-black rounded-full animate-breathe" style={{ animationDelay: '300ms' }}></div>
-                    <div className="w-1.5 h-1.5 bg-black rounded-full animate-breathe" style={{ animationDelay: '600ms' }}></div>
+                    <div className="w-2 h-2 bg-black rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                    <div className="w-2 h-2 bg-black rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                    <div className="w-2 h-2 bg-black rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
                   </div>
                 </div>
               </div>
-              <div className="inline-block w-0.5 h-6 bg-black animate-blink"></div>
+              <p className="text-xs text-gemini-text-secondary mt-2">
+                {isFetching ? '正在获取新闻源...' : '正在生成设计情报...'}
+              </p>
             </div>
           </div>
         )}
@@ -494,7 +496,7 @@ export default function AIRadarPage() {
         {!isFetching && !isAnalyzing && radarData && !errorState.show && (
           <>
             {/* Tab 切换 */}
-            <div className="mb-6 flex gap-2">
+            <div className="mb-6 flex flex-wrap gap-2">
               <button
                 onClick={() => setActiveTab('news')}
                 className={`
@@ -554,7 +556,7 @@ export default function AIRadarPage() {
                   {radarData.daily_ai_news?.map((news, index) => (
                     <div
                       key={index}
-                      className="p-6 bg-gemini-surface border border-gemini-border rounded-3xl hover:border-black transition-colors"
+                      className="p-4 md:p-6 bg-gemini-surface border border-gemini-border rounded-2xl md:rounded-3xl hover:border-black transition-colors"
                     >
                       <div className="flex items-start gap-3 mb-4">
                         <span className="flex items-center justify-center w-6 h-6 rounded-full bg-black text-white text-xs font-semibold flex-shrink-0">

@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
 
+// Vercel 超时配置：60秒
+export const maxDuration = 60
+
 // 创建 OpenAI 客户端（使用阿里云通义千问）
 function createOpenAIClient() {
   const apiKey = process.env.OPENAI_API_KEY
@@ -92,9 +95,10 @@ export async function POST(request: NextRequest) {
 1. **全中文输出**。
 2. **严格 JSON 格式**：不包含 Markdown 标记。
 3. **每日 AI 动态 (Daily News)**:
-   - **数量**：必须返回 **6条**。
+   - **数量**：必须返回 **Top 3** 条最关键的趋势/洞察。
    - **筛选标准**：只收录与设计行业 **强相关** 的内容。例如：主流生成式模型(Midjourney, MJ, SD)的新版本发布、Adobe 等设计软件的 AI 功能更新、新的 AI 辅助设计工具、或者对设计工作流有直接影响的行业新闻。
    - **格式**：JSON 数组，包含 \`design_impact\` (设计影响) 和 \`potential_usage\` (利用空间)。
+   - **长度限制**：每个字段（title, content, design_impact, potential_usage）的描述请控制在 **50字以内**，保持精简。
 
 4. **工具风向标 (Tools Rank)**:
    - **数量**：4个分类（综合、Coding、生图、视频），每个分类必须返回 **Top 10**。
@@ -105,7 +109,7 @@ export async function POST(request: NextRequest) {
    {
      "weekly_insight": { "date_label": "YYYY年M月W周", "content": "..." },
      "daily_ai_news": [
-       // ... 6 items
+       // ... 3 items (Top 3 最关键的趋势)
        { "title": "...", "content": "...", "design_impact": "...", "potential_usage": "...", "url": "..." }
      ],
      "ai_tools_rank": {
@@ -119,7 +123,7 @@ export async function POST(request: NextRequest) {
 **重要**：
 - 只返回纯 JSON，不要任何 Markdown 代码块标记，不要任何解释文字。
 - 所有文本内容必须为中文。
-- daily_ai_news 必须严格筛选与设计行业强相关的新闻，必须返回 6 条。
+- daily_ai_news 必须严格筛选与设计行业强相关的新闻，只返回 Top 3 条最关键的趋势，每个字段控制在 50 字以内。
 - ai_tools_rank 每个分类必须返回 Top 10，每个工具必须包含 last_update 字段。
 - weekly_insight.date_label 必须使用系统提供的当前日期，不要使用其他日期。`
 
@@ -136,13 +140,14 @@ export async function POST(request: NextRequest) {
           role: 'user',
           content: `当前系统日期：${currentWeekLabel}\n\n这是从 RSS 源抓取到的最新科技新闻列表（可能包含英文内容）：\n\n${newsListText}\n\n请作为对技术极度敏感的资深设计总监，结合你的知识库，生成一份针对设计行业的 AI 情报简报。要求：
 1. 将所有英文内容翻译为流畅的中文
-2. 严格筛选与设计行业强相关的新闻，生成 **6条** daily_ai_news，每条必须包含：
-   - title: 新闻标题（中文）
-   - content: 新闻简介（中文）
-   - design_impact: 对设计行业的具体影响（核心分析）
-   - potential_usage: 设计师可以用它做什么（发散思维）
+2. 严格筛选与设计行业强相关的新闻，生成 **Top 3** 条最关键的趋势/洞察，每条必须包含：
+   - title: 新闻标题（中文，50字以内）
+   - content: 新闻简介（中文，50字以内）
+   - design_impact: 对设计行业的具体影响（核心分析，50字以内）
+   - potential_usage: 设计师可以用它做什么（发散思维，50字以内）
    - url: 新闻原文链接（如果原始新闻列表中有链接，请使用该链接；如果没有，请留空字符串 ""）
    - 筛选标准：只收录与设计行业强相关的内容，如主流生成式模型(Midjourney, MJ, SD)的新版本发布、Adobe 等设计软件的 AI 功能更新、新的 AI 辅助设计工具、或者对设计工作流有直接影响的行业新闻
+   - **重要**：每个字段的描述请控制在 50 字以内，保持精简，避免冗长。
 3. 生成 weekly_insight，包含：
    - date_label: 必须使用 "${currentWeekLabel}"（这是当前系统日期，不要使用其他日期）
    - content: 200字左右的深度趋势总结
@@ -202,8 +207,8 @@ export async function POST(request: NextRequest) {
       }
     }
     // 验证 daily_ai_news 数量
-    if (parsedData.daily_ai_news.length !== 6) {
-      console.warn(`警告：daily_ai_news 数量为 ${parsedData.daily_ai_news.length}，期望为 6`)
+    if (parsedData.daily_ai_news.length !== 3) {
+      console.warn(`警告：daily_ai_news 数量为 ${parsedData.daily_ai_news.length}，期望为 3`)
     }
 
     return NextResponse.json({

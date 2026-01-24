@@ -198,13 +198,13 @@ export default function TranslationPage() {
 
   return (
     <div className="h-full bg-gemini-bg">
-      <div className="h-full flex">
+      <div className="h-full flex flex-col md:flex-row">
         {/* 左侧输入区 */}
-        <div className="w-1/2 border-r border-gemini-border flex flex-col">
-          <div className="p-6 border-b border-gemini-border">
+        <div className="w-full md:w-1/2 border-b md:border-b-0 md:border-r border-gemini-border flex flex-col">
+          <div className="p-4 md:p-6 border-b border-gemini-border">
             <div className="flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gemini-text flex items-center gap-2">
-                <Languages size={20} />
+              <h2 className="text-base md:text-lg font-semibold text-gemini-text flex items-center gap-2">
+                <Languages size={18} className="md:w-5 md:h-5" />
                 翻译助手
               </h2>
               {(inputText.trim() || selectedImage || output) && (
@@ -219,7 +219,7 @@ export default function TranslationPage() {
             </div>
           </div>
 
-          <div className="flex-1 p-6 flex flex-col gap-4 overflow-auto">
+          <div className="flex-1 p-4 md:p-6 flex flex-col gap-4 overflow-auto">
             {/* 文本输入区 */}
             <div className="flex-1 flex flex-col">
               <label className="block text-sm font-medium text-gemini-text mb-2">
@@ -286,7 +286,7 @@ export default function TranslationPage() {
             </div>
           </div>
 
-          <div className="p-6 border-t border-gemini-border">
+          <div className="p-4 md:p-6 border-t border-gemini-border">
             <button
               onClick={isTranslating ? stopTranslation : handleTranslate}
               disabled={(!inputText.trim() && !selectedImage) && !isTranslating}
@@ -316,13 +316,13 @@ export default function TranslationPage() {
         </div>
 
         {/* 右侧输出区 */}
-        <div className="w-1/2 flex flex-col">
-          <div className="p-6 border-b border-gemini-border">
-            <h2 className="text-lg font-semibold text-gemini-text">
+        <div className="w-full md:w-1/2 flex flex-col">
+          <div className="p-4 md:p-6 border-b border-gemini-border">
+            <h2 className="text-base md:text-lg font-semibold text-gemini-text">
               翻译结果
             </h2>
           </div>
-          <div className="flex-1 p-6 overflow-auto bg-gemini-surface rounded-3xl m-4">
+          <div className="flex-1 p-4 md:p-6 overflow-auto bg-gemini-surface rounded-2xl md:rounded-3xl m-2 md:m-4">
             {/* 错误提示卡片 */}
             {errorState.show && (
               <div className="mb-4 p-4 bg-gemini-bg border border-gemini-border rounded-3xl shadow-gemini-sm">
