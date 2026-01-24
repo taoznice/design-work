@@ -250,10 +250,11 @@ export default function ProposalReviewPage() {
       
       // 3秒后使用降级方案
       setTimeout(() => {
-        // fix: changed const to let
-        let judgment = generateMockJudgment(enableMemory ? savedMemory : null)
-        judgment += `\n\n*⚠️ 注意：由于 API 调用失败，以上为基于通用设计原则的模拟分析。*`
-        setAiJudgment(judgment)
+        const original = generateMockJudgment(enableMemory ? savedMemory : null)
+        let finalResult = original
+        
+        finalResult += `\n\n*⚠️ 注意：由于 API 调用失败，以上为基于通用设计原则的模拟分析。*`
+        setAiJudgment(finalResult)
         setErrorState({ show: false, message: '' })
       }, 3000)
     } finally {
