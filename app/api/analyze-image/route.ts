@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import OpenAI from 'openai'
 
-// 创建 OpenAI 客户端（使用内部 API）
+// 创建 OpenAI 客户端（使用阿里云通义千问）
 function createOpenAIClient() {
   const apiKey = process.env.OPENAI_API_KEY
-  const baseUrl = process.env.OPENAI_BASE_URL || 'https://aigc.sankuai.com/v1/openai/native'
+  const baseUrl = 'https://dashscope.aliyuncs.com/compatible-mode/v1'
   
   if (!apiKey) {
     throw new Error('OPENAI_API_KEY 未配置')
@@ -174,7 +174,7 @@ export async function POST(request: NextRequest) {
     }
 
     const completion = await openai.chat.completions.create({
-      model: 'qwen3-vl-plus',
+      model: 'qwen-vl-max',
       messages: [
         {
           role: 'system',
