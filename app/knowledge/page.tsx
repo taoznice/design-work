@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Plus, X, Image as ImageIcon, FileText, Trash2, Save } from 'lucide-react'
+import { Plus, X, Image as ImageIcon, FileText, Trash2, Save, File } from 'lucide-react'
 
 interface KnowledgeCard {
   id: string
@@ -22,9 +22,15 @@ export default function KnowledgePage() {
     enabled: true,
   })
   const [imageFile, setImageFile] = useState<File | null>(null)
+  const [pdfFile, setPdfFile] = useState<File | null>(null)
+  const [isParsingPdf, setIsParsingPdf] = useState(false)
+  const [pdfText, setPdfText] = useState<string>('')
+  const [pdfTruncated, setPdfTruncated] = useState(false)
 
   // 从 LocalStorage 加载数据
   useEffect(() => {
+    if (typeof window === 'undefined') return
+    
     const saved = localStorage.getItem('team-wisdom')
     if (saved) {
       try {
@@ -37,6 +43,8 @@ export default function KnowledgePage() {
 
   // 保存到 LocalStorage
   const saveCards = (updatedCards: KnowledgeCard[]) => {
+    if (typeof window === 'undefined') return
+    
     try {
       localStorage.setItem('team-wisdom', JSON.stringify(updatedCards))
       setCards(updatedCards)
@@ -58,6 +66,50 @@ export default function KnowledgePage() {
         }))
       }
       reader.readAsDataURL(file)
+    }
+  }
+
+  // 处理 PDF 上传和解析
+  const handlePdfUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file && file.type === 'application/pdf') {
+      setPdfFile(file)
+      setIsParsingPdf(true)
+      setPdfText('')
+      setPdfTruncated(false)
+
+      try {
+        const formData = new FormData()
+        formData.append('file', file)
+
+        const response = await fetch('/api/parse-pdf', {
+          method: 'POST',
+          body: formData,
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}))
+          throw new Error(errorData.error || 'PDF 解析失败')
+        }
+
+        const data = await response.json()
+        if (data.success && data.data) {
+          setPdfText(data.data.text)
+          setPdfTruncated(data.data.isTruncated)
+          setNewCard(prev => ({
+            ...prev,
+            content: data.data.text,
+          }))
+        } else {
+          throw new Error(data.error || 'PDF 解析失败')
+        }
+      } catch (error: any) {
+        console.error('PDF Parse Error:', error)
+        alert(`PDF 解析失败：${error.message || '未知错误'}`)
+        setPdfFile(null)
+      } finally {
+        setIsParsingPdf(false)
+      }
     }
   }
 
@@ -88,6 +140,9 @@ export default function KnowledgePage() {
       enabled: true,
     })
     setImageFile(null)
+    setPdfFile(null)
+    setPdfText('')
+    setPdfTruncated(false)
     setIsAdding(false)
   }
 
@@ -191,10 +246,37 @@ export default function KnowledgePage() {
                   <label className="block text-sm font-medium text-gray-900 mb-2">
                     内容 *
                   </label>
+                  <div className="mb-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const input = document.createElement('input')
+                        input.type = 'file'
+                        input.accept = '.pdf'
+                        input.onchange = (e: any) => {
+                          const file = e.target.files?.[0]
+                          if (file) {
+                            handlePdfUpload({ target: { files: [file] } } as any)
+                          }
+                        }
+                        input.click()
+                      }}
+                      disabled={isParsingPdf}
+                      className="flex items-center gap-2 px-3 py-1.5 text-xs text-gray-700 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <File size={14} />
+                      {isParsingPdf ? '正在解析 PDF...' : '上传 PDF'}
+                    </button>
+                  </div>
+                  {pdfTruncated && (
+                    <div className="mb-2 p-2 bg-yellow-50 border border-yellow-200 rounded-lg text-xs text-yellow-700">
+                      ⚠️ 已截取前 10,000 个字符进行分析
+                    </div>
+                  )}
                   <textarea
                     value={newCard.content || ''}
                     onChange={(e) => setNewCard(prev => ({ ...prev, content: e.target.value }))}
-                    placeholder="输入方法论描述..."
+                    placeholder="输入方法论描述，或点击上方按钮上传 PDF 文件..."
                     className="w-full min-h-[120px] px-4 py-3 bg-[#F5F5F5] text-gemini-text placeholder:text-gemini-text-secondary rounded-3xl text-sm focus:outline-none focus:ring-0 focus:shadow-gemini-focus focus:bg-white resize-none transition-all"
                   />
                 </div>
@@ -249,6 +331,9 @@ export default function KnowledgePage() {
                     setIsAdding(false)
                     setNewCard({ title: '', contentType: 'text', content: '', enabled: true })
                     setImageFile(null)
+                    setPdfFile(null)
+                    setPdfText('')
+                    setPdfTruncated(false)
                   }}
                   className="px-4 py-2 text-sm text-gray-700 hover:text-gray-900"
                 >

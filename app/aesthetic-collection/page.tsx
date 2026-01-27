@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { Upload, X, Sparkles, Image as ImageIcon, Link as LinkIcon, Trash2, Palette } from 'lucide-react'
+import imageCompression from 'browser-image-compression'
 
 interface AestheticStyle {
   id: string
@@ -15,10 +16,12 @@ interface AestheticStyle {
 }
 
 export default function AestheticCollectionPage() {
-  const [selectedImage, setSelectedImage] = useState<string | null>(null)
+  const [selectedImages, setSelectedImages] = useState<string[]>([])
+  const [imageFiles, setImageFiles] = useState<File[]>([])
   const [imageUrl, setImageUrl] = useState<string>('')
   const [inputMode, setInputMode] = useState<'upload' | 'url'>('upload')
   const [isExtracting, setIsExtracting] = useState(false)
+  const [isCompressing, setIsCompressing] = useState(false)
   const [extractedData, setExtractedData] = useState<AestheticStyle | null>(null)
   const [styles, setStyles] = useState<AestheticStyle[]>([])
   const [errorState, setErrorState] = useState<{ show: boolean; message: string }>({
@@ -27,8 +30,14 @@ export default function AestheticCollectionPage() {
   })
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  const MAX_IMAGES = 6
+  const MAX_SIZE_PER_IMAGE = 500 * 1024 // 500KB
+  const MAX_TOTAL_SIZE = 4 * 1024 * 1024 // 4MB
+
   // 从 LocalStorage 加载历史风格
   useEffect(() => {
+    if (typeof window === 'undefined') return
+    
     const saved = localStorage.getItem('aesthetic-collection')
     if (saved) {
       try {
@@ -42,6 +51,8 @@ export default function AestheticCollectionPage() {
 
   // 保存风格到 LocalStorage
   const saveStyles = (updatedStyles: AestheticStyle[]) => {
+    if (typeof window === 'undefined') return
+    
     try {
       localStorage.setItem('aesthetic-collection', JSON.stringify(updatedStyles))
       setStyles(updatedStyles)
@@ -50,31 +61,110 @@ export default function AestheticCollectionPage() {
     }
   }
 
-  // 处理图片上传
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file && file.type.startsWith('image/')) {
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setSelectedImage(reader.result as string)
-        setImageUrl('')
+  // 压缩图片
+  const compressImage = async (file: File): Promise<File> => {
+    const options = {
+      maxSizeMB: 0.5, // 500KB
+      maxWidthOrHeight: 1920,
+      useWebWorker: true,
+    }
+    
+    try {
+      const compressedFile = await imageCompression(file, options)
+      return compressedFile
+    } catch (error) {
+      console.error('Image compression error:', error)
+      throw new Error('图片压缩失败')
+    }
+  }
+
+  // 处理批量图片上传
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    
+    if (files.length === 0) return
+
+    // 检查数量限制
+    const currentCount = selectedImages.length
+    if (currentCount + files.length > MAX_IMAGES) {
+      setErrorState({
+        show: true,
+        message: `最多只能上传 ${MAX_IMAGES} 张图片，当前已有 ${currentCount} 张`,
+      })
+      return
+    }
+
+    // 只取前 N 张
+    const filesToProcess = files.slice(0, MAX_IMAGES - currentCount)
+    setIsCompressing(true)
+    setErrorState({ show: false, message: '' })
+
+    try {
+      const compressedFiles: File[] = []
+      const compressedImages: string[] = []
+
+      // 逐个压缩图片
+      for (const file of filesToProcess) {
+        if (!file.type.startsWith('image/')) {
+          continue
+        }
+
+        const compressedFile = await compressImage(file)
+        compressedFiles.push(compressedFile)
+
+        // 转换为 base64
+        const reader = new FileReader()
+        await new Promise<void>((resolve, reject) => {
+          reader.onloadend = () => {
+            compressedImages.push(reader.result as string)
+            resolve()
+          }
+          reader.onerror = reject
+          reader.readAsDataURL(compressedFile)
+        })
       }
-      reader.readAsDataURL(file)
+
+      // 检查总大小
+      const totalSize = compressedFiles.reduce((sum, file) => sum + file.size, 0)
+      if (totalSize > MAX_TOTAL_SIZE) {
+        setErrorState({
+          show: true,
+          message: `压缩后的图片总大小超过 4MB，请减少图片数量或选择更小的图片`,
+        })
+        return
+      }
+
+      setImageFiles([...imageFiles, ...compressedFiles])
+      setSelectedImages([...selectedImages, ...compressedImages])
+      setImageUrl('')
+    } catch (error: any) {
+      console.error('Image upload error:', error)
+      setErrorState({
+        show: true,
+        message: error.message || '图片处理失败',
+      })
+    } finally {
+      setIsCompressing(false)
+      // 清空 input 以便再次选择相同文件
+      if (fileInputRef.current) {
+        fileInputRef.current.value = ''
+      }
     }
   }
 
-  // 处理图片 URL
-  const handleImageUrlChange = (url: string) => {
-    setImageUrl(url)
-    setSelectedImage(null)
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''
-    }
+  // 移除单张图片
+  const handleRemoveImage = (index: number) => {
+    const newImages = selectedImages.filter((_, i) => i !== index)
+    const newFiles = imageFiles.filter((_, i) => i !== index)
+    setSelectedImages(newImages)
+    setImageFiles(newFiles)
+    setExtractedData(null)
   }
 
-  // 移除图片
-  const handleRemoveImage = () => {
-    setSelectedImage(null)
+  // 移除所有图片
+  const handleRemoveAllImages = () => {
+    setSelectedImages([])
+    setImageFiles([])
     setImageUrl('')
     setExtractedData(null)
     if (fileInputRef.current) {
@@ -82,10 +172,20 @@ export default function AestheticCollectionPage() {
     }
   }
 
+  // 处理图片 URL
+  const handleImageUrlChange = (url: string) => {
+    setImageUrl(url)
+    setSelectedImages([])
+    setImageFiles([])
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
   // 提取风格特征
   const extractFeatures = async () => {
-    const imageSource = selectedImage || imageUrl
-    if (!imageSource) {
+    const hasImages = selectedImages.length > 0 || imageUrl
+    if (!hasImages) {
       alert('请先上传图片或输入图片链接')
       return
     }
@@ -101,7 +201,7 @@ export default function AestheticCollectionPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          imageBase64: selectedImage || undefined,
+          imagesBase64: selectedImages.length > 0 ? selectedImages : undefined,
           imageUrl: imageUrl || undefined,
         }),
       })
@@ -121,7 +221,7 @@ export default function AestheticCollectionPage() {
           colorPalette: data.data.colorPalette || [],
           mood: data.data.mood || '',
           composition: data.data.composition || '',
-          imageUrl: imageSource,
+          imageUrl: selectedImages.length > 0 ? selectedImages[0] : imageUrl,
           createdAt: Date.now(),
         }
         
@@ -169,7 +269,7 @@ export default function AestheticCollectionPage() {
 
   return (
     <div className="h-full bg-gemini-bg">
-      <div className="max-w-6xl mx-auto p-8">
+      <div className="max-w-6xl mx-auto p-4 md:p-8">
         <div className="mb-8">
           <h1 className="text-2xl font-semibold text-gemini-text mb-2">
             审美合集
@@ -180,7 +280,7 @@ export default function AestheticCollectionPage() {
         </div>
 
         {/* 输入区域 */}
-        <div className="mb-8 border border-gemini-border rounded-3xl p-6 bg-gemini-bg">
+        <div className="mb-8 border border-gemini-border rounded-2xl md:rounded-3xl p-4 md:p-6 bg-gemini-bg">
           <div className="mb-4">
             <div className="flex gap-4 mb-4">
               <label className="flex items-center gap-2 cursor-pointer">
@@ -209,40 +309,74 @@ export default function AestheticCollectionPage() {
 
             {inputMode === 'upload' ? (
               <div>
-                {!selectedImage ? (
+                {selectedImages.length === 0 ? (
                   <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="border-2 border-dashed border-gemini-border rounded-3xl p-12 
+                    className="border-2 border-dashed border-gemini-border rounded-3xl p-8 md:p-12 
                              text-center cursor-pointer hover:border-gray-400 transition-colors"
                   >
                     <Upload size={32} className="mx-auto text-gray-400 mb-3" />
                     <p className="text-sm text-gray-600 mb-1">
-                      点击上传图片
+                      点击上传图片（最多 {MAX_IMAGES} 张）
                     </p>
                     <p className="text-xs text-gray-400">
-                      支持 JPG、PNG、GIF 格式
+                      支持 JPG、PNG、GIF 格式，每张图片将自动压缩至 500KB 以下
                     </p>
                     <input
                       ref={fileInputRef}
                       type="file"
                       accept="image/*"
+                      multiple
                       onChange={handleImageUpload}
                       className="hidden"
                     />
                   </div>
                 ) : (
-                  <div className="relative">
-                    <img
-                      src={selectedImage}
-                      alt="上传的图片"
-                      className="w-full rounded-3xl border border-gemini-border max-h-64 object-contain bg-gemini-surface"
-                    />
-                    <button
-                      onClick={handleRemoveImage}
-                      className="absolute top-2 right-2 p-1.5 bg-white rounded-full shadow-sm hover:bg-gray-50"
-                    >
-                      <X size={16} className="text-gray-600" />
-                    </button>
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm text-gray-600">
+                        已选择 {selectedImages.length} / {MAX_IMAGES} 张图片
+                      </p>
+                      {selectedImages.length < MAX_IMAGES && (
+                        <button
+                          onClick={() => fileInputRef.current?.click()}
+                          className="text-xs text-gray-600 hover:text-gray-900 underline"
+                        >
+                          继续添加
+                        </button>
+                      )}
+                      <button
+                        onClick={handleRemoveAllImages}
+                        className="text-xs text-red-600 hover:text-red-800 underline"
+                      >
+                        清空所有
+                      </button>
+                    </div>
+                    {isCompressing && (
+                      <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs text-blue-700">
+                        正在压缩图片...
+                      </div>
+                    )}
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {selectedImages.map((image, index) => (
+                        <div key={index} className="relative group">
+                          <img
+                            src={image}
+                            alt={`上传的图片 ${index + 1}`}
+                            className="w-full aspect-square rounded-2xl border border-gemini-border object-cover bg-gemini-surface"
+                          />
+                          <button
+                            onClick={() => handleRemoveImage(index)}
+                            className="absolute top-2 right-2 p-1.5 bg-white rounded-full shadow-sm hover:bg-gray-50 opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X size={14} className="text-gray-600" />
+                          </button>
+                          <div className="absolute bottom-2 left-2 px-2 py-1 bg-black/50 text-white text-xs rounded">
+                            {Math.round((imageFiles[index]?.size || 0) / 1024)}KB
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
@@ -290,7 +424,7 @@ export default function AestheticCollectionPage() {
           )}
 
           {/* 提取按钮 */}
-          {(selectedImage || imageUrl) && (
+          {(selectedImages.length > 0 || imageUrl) && (
             <button
               onClick={extractFeatures}
               disabled={isExtracting}
@@ -365,7 +499,7 @@ export default function AestheticCollectionPage() {
               <p className="text-sm text-gray-400">还没有提取过风格特征</p>
             </div>
           ) : (
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {styles.map((style) => (
                 <div
                   key={style.id}

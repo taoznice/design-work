@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { Sparkles, CheckCircle2, Upload, X, Square } from 'lucide-react'
+import MemoryToast from '@/components/MemoryToast'
+import { useMemoryExtraction } from '@/hooks/useMemoryExtraction'
 
 interface MemoryContext {
   userPreferences: string[]
@@ -37,13 +39,22 @@ export default function StrategyLabPage() {
     retrying: false,
     retryCount: 0,
   })
-  const [memoryUpdateSuggestion, setMemoryUpdateSuggestion] = useState<MemoryUpdateSuggestion | null>(null)
   const [memory, setMemory] = useState<Memory | null>(null)
+  
+  // 使用全局记忆提取 Hook
+  const {
+    suggestion: memoryUpdateSuggestion,
+    extractMemory,
+    confirmMemory,
+    ignoreMemory,
+  } = useMemoryExtraction()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const abortControllerRef = useRef<AbortController | null>(null)
 
   // 检查是否有 Memory 配置
   useEffect(() => {
+    if (typeof window === 'undefined') return
+    
     const saved = localStorage.getItem('team-dna')
     if (saved) {
       try {
@@ -201,12 +212,12 @@ export default function StrategyLabPage() {
       addStatusMessage('ℹ 记忆功能已禁用')
     }
 
-    // 读取知识库（如果启用）
-    let knowledgeCards: any[] = []
-    if (useTeamWisdom) {
-      addStatusMessage('正在读取团队知识库...')
-      try {
-        const saved = localStorage.getItem('team-wisdom')
+      // 读取知识库（如果启用）
+      let knowledgeCards: any[] = []
+      if (useTeamWisdom && typeof window !== 'undefined') {
+        addStatusMessage('正在读取团队知识库...')
+        try {
+          const saved = localStorage.getItem('team-wisdom')
         if (saved) {
           knowledgeCards = JSON.parse(saved)
           const enabledCount = knowledgeCards.filter((c: any) => c.enabled).length
@@ -250,22 +261,57 @@ export default function StrategyLabPage() {
       addStatusMessage(`✓ 服务器响应: HTTP ${response.status}`)
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        addStatusMessage(`✗ 请求失败: ${errorData.error || '未知错误'}`)
-        throw new Error(errorData.error || errorData.message || 'API 请求失败')
+        let errorData: any = {}
+        try {
+          const contentType = response.headers.get('content-type')
+          if (contentType && contentType.includes('application/json')) {
+            errorData = await response.json()
+          } else {
+            const text = await response.text()
+            errorData = { error: text || `HTTP ${response.status} 错误` }
+          }
+        } catch (parseError) {
+          console.error('Failed to parse error response:', parseError)
+          errorData = { 
+            error: `HTTP ${response.status} 错误`,
+            details: '无法解析服务器响应'
+          }
+        }
+        
+        const errorMessage = errorData.error || errorData.message || `API 请求失败 (HTTP ${response.status})`
+        const errorDetails = errorData.details ? `\n\n详细信息：${errorData.details}` : ''
+        
+        addStatusMessage(`✗ 请求失败: ${errorMessage}`)
+        throw new Error(errorMessage + errorDetails)
       }
 
       addStatusMessage('正在解析响应数据...')
-      const data = await response.json()
-      addStatusMessage('✓ 响应数据已接收')
+      let data: any
+      try {
+        data = await response.json()
+        addStatusMessage('✓ 响应数据已接收')
+      } catch (parseError) {
+        console.error('Failed to parse response:', parseError)
+        addStatusMessage('✗ 响应数据解析失败')
+        throw new Error('服务器返回的数据格式不正确，无法解析 JSON')
+      }
       
       if (data.success && data.data?.response) {
         addStatusMessage('正在处理 AI 生成的内容...')
-        setOutput(data.data.response)
+        const aiResponse = data.data.response
+        setOutput(aiResponse)
         addStatusMessage('✓ 策略生成完成！')
+        
+        // 后台静默分析记忆（不阻塞用户）
+        if (enableMemory && input.trim()) {
+          // 使用 setTimeout 确保不阻塞主流程
+          setTimeout(() => {
+            extractMemory(input.trim(), aiResponse)
+          }, 500)
+        }
       } else {
         const errorMsg = data.error || data.message || '生成失败'
-        const errorDetails = data.details ? `\n\n**详细信息**：${data.details}` : ''
+        const errorDetails = data.details ? `\n\n详细信息：${data.details}` : ''
         addStatusMessage(`✗ 生成失败: ${errorMsg}`)
         throw new Error(errorMsg + errorDetails)
       }
@@ -348,70 +394,31 @@ export default function StrategyLabPage() {
     }
   }
 
-  // 提取记忆更新建议
-  const extractMemoryUpdate = async (userInput: string, aiResponse: string, currentMemory: Memory | null) => {
-    try {
-      const response = await fetch('/api/extract-memory', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          userInput,
-          aiResponse,
-          currentMemory: currentMemory?.context,
-        }),
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        if (data.success && data.data?.suggestion) {
-          setMemoryUpdateSuggestion(data.data.suggestion)
+  // 确认记忆更新（使用全局 Hook 的方法，并同步本地 memory 状态）
+  const handleConfirmMemoryUpdate = () => {
+    confirmMemory()
+    // 重新加载 memory 以同步状态
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('team-dna')
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved)
+          if (parsed.context) {
+            setMemory({
+              context: parsed.context,
+              enabled: parsed.enabled !== false,
+            })
+          }
+        } catch (e) {
+          console.error('Failed to reload memory:', e)
         }
       }
-    } catch (error) {
-      // 静默失败，不影响主流程
-      console.error('Failed to extract memory update:', error)
-    }
-  }
-
-  // 确认记忆更新
-  const handleConfirmMemoryUpdate = () => {
-    if (!memoryUpdateSuggestion || !memory) return
-
-    const updatedContext = { ...memory.context }
-    const category = memoryUpdateSuggestion.category
-
-    // 移除旧值（如果存在）
-    if (memoryUpdateSuggestion.oldValue) {
-      updatedContext[category] = updatedContext[category].filter(
-        (item: string) => item !== memoryUpdateSuggestion.oldValue
-      )
-    }
-
-    // 添加新值
-    if (!updatedContext[category].includes(memoryUpdateSuggestion.newValue)) {
-      updatedContext[category].push(memoryUpdateSuggestion.newValue)
-    }
-
-    const updatedMemory: Memory = {
-      ...memory,
-      context: updatedContext,
-    }
-
-    try {
-      localStorage.setItem('team-dna', JSON.stringify(updatedMemory))
-      setMemory(updatedMemory)
-      setMemoryUpdateSuggestion(null)
-      // 可以显示一个成功提示
-    } catch (e) {
-      console.error('Failed to update memory:', e)
     }
   }
 
   // 忽略记忆更新
   const handleIgnoreMemoryUpdate = () => {
-    setMemoryUpdateSuggestion(null)
+    ignoreMemory()
   }
 
   // 生成模拟的 Markdown 格式策略（降级方案）
@@ -639,52 +646,13 @@ ${useMemory && hasDNA ? '*已基于记忆配置生成*' : useMemory ? '*提示�
 
         {/* 右侧输出区 */}
         <div className="w-1/2 flex flex-col relative">
-          {/* 记忆更新请求弹窗 */}
-          {memoryUpdateSuggestion && (
-            <div className="absolute top-4 right-4 z-50 w-80 bg-gemini-bg border border-gemini-border rounded-3xl shadow-gemini-md p-4">
-              <div className="flex items-start justify-between mb-3">
-                <h3 className="text-sm font-semibold text-gemini-text">记忆更新请求</h3>
-                <button
-                  onClick={handleIgnoreMemoryUpdate}
-                  className="text-gemini-text-secondary hover:text-gemini-text transition-colors"
-                >
-                  <X size={16} />
-                </button>
-              </div>
-              <div className="space-y-2 mb-4">
-                <div className="text-xs text-gemini-text-secondary">
-                  <span className="font-medium">类别：</span>
-                  {memoryUpdateSuggestion.category === 'userPreferences' && '用户偏好'}
-                  {memoryUpdateSuggestion.category === 'projectContext' && '项目背景'}
-                  {memoryUpdateSuggestion.category === 'vocabulary' && '专用术语'}
-                </div>
-                {memoryUpdateSuggestion.oldValue && (
-                  <div className="text-xs">
-                    <span className="text-gemini-text-secondary">旧值：</span>
-                    <span className="text-gemini-text line-through ml-1">{memoryUpdateSuggestion.oldValue}</span>
-                  </div>
-                )}
-                <div className="text-xs">
-                  <span className="text-gemini-text-secondary">新值：</span>
-                  <span className="text-gemini-text ml-1">{memoryUpdateSuggestion.newValue}</span>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  onClick={handleConfirmMemoryUpdate}
-                  className="flex-1 px-3 py-2 bg-black text-white text-xs font-medium rounded-full hover:bg-gray-800 transition-colors"
-                >
-                  确认更新
-                </button>
-                <button
-                  onClick={handleIgnoreMemoryUpdate}
-                  className="flex-1 px-3 py-2 bg-gemini-surface text-gemini-text text-xs font-medium rounded-full hover:bg-gemini-surface-hover transition-colors"
-                >
-                  忽略
-                </button>
-              </div>
-            </div>
-          )}
+          {/* 全局记忆更新 Toast 通知 */}
+          <MemoryToast
+            suggestion={memoryUpdateSuggestion}
+            onConfirm={handleConfirmMemoryUpdate}
+            onIgnore={handleIgnoreMemoryUpdate}
+            onClose={handleIgnoreMemoryUpdate}
+          />
 
           <div className="p-6 border-b border-gemini-border flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gemini-text">

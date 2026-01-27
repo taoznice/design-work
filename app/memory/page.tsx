@@ -103,6 +103,8 @@ export default function MemoryPage() {
 
   // 从 LocalStorage 加载数据
   useEffect(() => {
+    if (typeof window === 'undefined') return
+    
     const saved = localStorage.getItem('team-dna')
     if (saved) {
       try {
@@ -149,6 +151,8 @@ export default function MemoryPage() {
 
   // 保存到 LocalStorage
   const handleSave = () => {
+    if (typeof window === 'undefined') return
+    
     setIsSaving(true)
     try {
       localStorage.setItem('team-dna', JSON.stringify(memory))

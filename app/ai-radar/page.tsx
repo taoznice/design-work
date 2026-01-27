@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Sparkles, ExternalLink, TrendingUp, Newspaper, Lightbulb, Award, Code, Image, Video, Zap } from 'lucide-react'
+import { useAppStore } from '@/store/useAppStore'
 
 interface NewsItem {
   title: string
@@ -10,13 +11,15 @@ interface NewsItem {
   source: string
 }
 
-// 新的类型定义
+// 新的类型定义（支持精简格式）
 interface DailyAINews {
   title: string
-  content: string
-  design_impact: string
-  potential_usage: string
-  url?: string // 新增：新闻链接
+  content?: string // 旧格式兼容
+  insight?: string // 新格式：一句话核心洞察
+  tags?: string[] // 新格式：关键词数组
+  design_impact: string // 对设计行业的影响（必需）
+  potential_usage: string // 可发散利用空间（必需）
+  url?: string // 新闻链接
 }
 
 interface ToolItem {
@@ -49,16 +52,41 @@ const TIME_KEY = 'radar_time_v3'
 const CACHE_DURATION = 12 * 60 * 60 * 1000 // 12小时（毫秒）
 
 export default function AIRadarPage() {
-  const [rawNews, setRawNews] = useState<NewsItem[]>([])
-  const [radarData, setRadarData] = useState<RadarData | null>(null)
+  // 全局状态管理
+  const { radar, setRadarState } = useAppStore()
+  
+  // 从全局状态恢复数据（使用函数式初始化，确保只执行一次）
+  const [rawNews, setRawNews] = useState<NewsItem[]>(() => {
+    if (radar.input && Array.isArray(radar.input)) {
+      console.log('📥 [AIRadar] 初始化 rawNews 从全局状态:', radar.input.length)
+      return radar.input
+    }
+    return []
+  })
+  const [radarData, setRadarData] = useState<RadarData | null>(() => {
+    if (radar.result) {
+      console.log('📥 [AIRadar] 初始化 radarData 从全局状态')
+      return radar.result
+    }
+    return null
+  })
   const [activeTab, setActiveTab] = useState<TabType>('news')
   const [activeToolSubTab, setActiveToolSubTab] = useState<ToolSubTabType>('comprehensive')
   const [isFetching, setIsFetching] = useState(false)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
-  const [errorState, setErrorState] = useState<{ show: boolean; message: string }>({
-    show: false,
-    message: '',
+  const [errorState, setErrorState] = useState<{ show: boolean; message: string }>(() => {
+    if (radar.error) {
+      return radar.error
+    }
+    return { show: false, message: '' }
   })
+  
+  // 流式输出相关状态
+  const [streamingText, setStreamingText] = useState<string>('')
+  const [partialData, setPartialData] = useState<RadarData | null>(null)
+  const abortControllerRef = useRef<AbortController | null>(null)
+  const updateTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const lastUpdateTimeRef = useRef<number>(0)
 
   // --- 辅助函数：清洗 AI 返回的字符串 ---
   const cleanAndParseJSON = (text: string): any => {
@@ -82,6 +110,7 @@ export default function AIRadarPage() {
 
   // 检查缓存是否有效
   const isCacheValid = (): boolean => {
+    if (typeof window === 'undefined') return false
     try {
       const cachedData = localStorage.getItem(CACHE_KEY)
       const lastTime = localStorage.getItem(TIME_KEY)
@@ -106,6 +135,7 @@ export default function AIRadarPage() {
 
   // 从缓存加载数据
   const loadFromCache = (): RadarData | null => {
+    if (typeof window === 'undefined') return null
     try {
       const cachedData = localStorage.getItem(CACHE_KEY)
       if (cachedData) {
@@ -135,6 +165,7 @@ export default function AIRadarPage() {
 
   // 保存数据到缓存（只有成功解析出有效数据才写入）
   const saveToCache = (data: RadarData) => {
+    if (typeof window === 'undefined') return
     try {
       // 验证数据有效性
       if (!data || 
@@ -178,25 +209,122 @@ export default function AIRadarPage() {
     await fetchNews()
   }
 
-  // 页面加载时自动获取新闻
+  // 页面加载时从全局状态恢复或自动获取新闻
   useEffect(() => {
-    loadData()
+    // 检查是否有全局状态
+    const hasStoredData = radar.result || (radar.input && Array.isArray(radar.input) && radar.input.length > 0)
+    
+    if (hasStoredData) {
+      console.log('🔄 [AIRadar] 从全局状态恢复数据', {
+        hasResult: !!radar.result,
+        hasInput: !!radar.input,
+        resultNewsCount: radar.result?.daily_ai_news?.length || 0,
+        inputCount: radar.input?.length || 0
+      })
+      
+      // 确保状态已恢复（直接设置，不使用函数式更新，确保使用全局状态的值）
+      if (radar.result) {
+        console.log('✅ [AIRadar] 恢复分析结果，数据条数:', radar.result.daily_ai_news?.length || 0)
+        setRadarData(radar.result)
+      }
+      
+      if (radar.input && Array.isArray(radar.input) && radar.input.length > 0) {
+        console.log('✅ [AIRadar] 恢复原始新闻数据，数量:', radar.input.length)
+        setRawNews(radar.input)
+      }
+      
+      // 恢复错误状态
+      if (radar.error) {
+        setErrorState(radar.error)
+      }
+      
+      // 如果有部分数据，显示提示
+      if (radar.result && radar.result.daily_ai_news && radar.result.daily_ai_news.length > 0) {
+        const newsCount = radar.result.daily_ai_news.length
+        if (newsCount < 5) {
+          // 如果数据不完整，显示提示
+          setErrorState({
+            show: true,
+            message: `已恢复 ${newsCount} 条数据（共需 5 条，之前的分析可能未完成）`
+          })
+        }
+      }
+    } else {
+      // 没有存储的数据，加载新数据
+      console.log('📡 [AIRadar] 没有存储数据，开始加载')
+      loadData()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // 获取新闻后自动分析
+  // 保存状态到全局 Store - 使用防抖减少保存频率
+  // 注意：流式更新过程中的保存已经在 debouncedUpdate 中立即执行，这里只处理其他状态变化
   useEffect(() => {
-    if (rawNews.length > 0) {
-      // 使用 ref 或直接检查状态，避免依赖循环
-      const shouldAnalyze = !isAnalyzing && !isFetching
+    // 如果正在分析，不在这里保存（由流式更新逻辑负责立即保存）
+    if (isAnalyzing) {
+      return
+    }
+    
+    const timer = setTimeout(() => {
+      if (radarData || rawNews.length > 0) {
+        setRadarState({
+          result: radarData,
+          input: rawNews,
+          isLoading: isFetching || isAnalyzing,
+          error: errorState.show ? errorState : null,
+        })
+        console.log('💾 [AIRadar] 常规状态更新保存到全局 Store')
+      }
+    }, 300) // 300ms 防抖
+    
+    return () => clearTimeout(timer)
+  }, [radarData, rawNews, isFetching, isAnalyzing, errorState, setRadarState])
+
+  // 使用 ref 保存最新状态，以便在卸载时访问
+  const stateRef = useRef({ radarData, rawNews, isFetching, isAnalyzing, errorState })
+  useEffect(() => {
+    stateRef.current = { radarData, rawNews, isFetching, isAnalyzing, errorState }
+  }, [radarData, rawNews, isFetching, isAnalyzing, errorState])
+
+  // 组件卸载时保存状态（使用同步方式确保保存）
+  useEffect(() => {
+    return () => {
+      // 组件卸载时确保状态已保存
+      const current = stateRef.current
+      console.log('🔌 [AIRadar] 组件卸载，保存状态', {
+        hasData: !!current.radarData,
+        hasInput: current.rawNews.length > 0,
+        isLoading: current.isFetching || current.isAnalyzing,
+        dataCount: current.radarData?.daily_ai_news?.length || 0
+      })
+      
+      if (current.radarData || current.rawNews.length > 0) {
+        // 同步保存，不等待
+        setRadarState({
+          result: current.radarData,
+          input: current.rawNews,
+          isLoading: false, // 卸载时设为 false，因为流式请求已中断
+          error: current.errorState.show ? current.errorState : null,
+        })
+        console.log('✅ [AIRadar] 卸载时状态已保存到全局 Store')
+      }
+    }
+  }, [setRadarState])
+
+  // 获取新闻后自动分析（但不要重复分析）
+  useEffect(() => {
+    if (rawNews.length > 0 && !radarData) {
+      // 只有在没有结果且不在加载中时才自动分析
+      const shouldAnalyze = !isAnalyzing && !isFetching && !radarData
       if (shouldAnalyze) {
         console.log('🔍 [AIRadar] 开始分析新闻，数量:', rawNews.length)
         analyzeNews()
       } else {
-        console.log('⏸️ [AIRadar] 等待中，isAnalyzing:', isAnalyzing, 'isFetching:', isFetching)
+        console.log('⏸️ [AIRadar] 等待中或已有结果，isAnalyzing:', isAnalyzing, 'isFetching:', isFetching, 'hasData:', !!radarData)
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rawNews.length])
+  }, [rawNews.length, radarData])
 
   // 获取新闻
   const fetchNews = async () => {
@@ -264,34 +392,30 @@ export default function AIRadarPage() {
     }
   }
 
-  // 分析新闻
-  const analyzeNews = async () => {
+  // 流式分析新闻（新版本）
+  const analyzeNewsStream = async () => {
     if (rawNews.length === 0) {
-      console.log('⏸️ [AIRadar] analyzeNews 跳过：rawNews 为空')
+      console.log('⏸️ [AIRadar] analyzeNewsStream 跳过：rawNews 为空')
       setIsAnalyzing(false)
+      setRadarState({ isLoading: false })
       return
     }
 
-    console.log('🚀 [AIRadar] analyzeNews 开始，新闻数量:', rawNews.length)
+    console.log('🚀 [AIRadar] analyzeNewsStream 开始，新闻数量:', rawNews.length)
     setIsAnalyzing(true)
+    setStreamingText('')
+    setPartialData(null)
     setErrorState({ show: false, message: '' })
+    setRadarState({ isLoading: true, error: null })
 
-    // 添加超时处理（使用 AbortController）
-    const abortController = new AbortController()
-    const timeoutId = setTimeout(() => {
-      console.error('🔴 [AIRadar] analyzeNews 超时（60秒）')
-      abortController.abort()
-      setErrorState({
-        show: true,
-        message: '分析新闻超时，请检查网络连接或稍后重试',
-      })
-      setIsAnalyzing(false)
-    }, 60000) // 60秒超时（分析可能需要更长时间）
+    // 创建新的 AbortController
+    abortControllerRef.current = new AbortController()
+    const signal = abortControllerRef.current.signal
 
     try {
-      console.log('🚀 [AIRadar] 请求 API 中...')
+      console.log('🚀 [AIRadar] 请求流式 API 中...')
       
-      const response = await fetch('/api/news/analyze', {
+      const response = await fetch('/api/news/analyze-stream', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -299,122 +423,181 @@ export default function AIRadarPage() {
         body: JSON.stringify({
           newsData: rawNews,
         }),
-        signal: abortController.signal,
+        signal,
       })
-      
-      clearTimeout(timeoutId)
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         throw new Error(errorData.error || errorData.details || '分析新闻失败')
       }
 
-      const data = await response.json()
-      
-      if (!data.success) {
-        throw new Error(data.error || data.details || '分析失败')
+      if (!response.body) {
+        throw new Error('响应体为空')
       }
 
-      // ⚠️ 关键修改：如果 API 返回的 data.data 是字符串（可能包含 Markdown），使用清洗函数
-      let parsedData = data.data
-      
-      // 如果 data.data 是字符串，尝试清洗和解析
-      if (typeof data.data === 'string') {
-        console.log('⚠️ [AIRadar] API 返回字符串格式，执行清洗...')
-        parsedData = cleanAndParseJSON(data.data)
-      }
-      
-      // 验证数据结构
-      if (!parsedData || 
-          !parsedData.daily_ai_news || !Array.isArray(parsedData.daily_ai_news) ||
-          !parsedData.weekly_insight || typeof parsedData.weekly_insight !== 'object' ||
-          !parsedData.weekly_insight.date_label || !parsedData.weekly_insight.content ||
-          !parsedData.ai_tools_rank || typeof parsedData.ai_tools_rank !== 'object' ||
-          !Array.isArray(parsedData.ai_tools_rank.comprehensive) ||
-          !Array.isArray(parsedData.ai_tools_rank.coding) ||
-          !Array.isArray(parsedData.ai_tools_rank.image_gen) ||
-          !Array.isArray(parsedData.ai_tools_rank.video_gen)) {
-        throw new Error('返回数据格式不正确：缺少必需字段或格式错误')
-      }
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
+      let accumulatedText = ''
 
-      // 验证数据有效性（数组长度 > 0）
-      if (parsedData.daily_ai_news.length === 0) {
-        throw new Error('返回数据无效：daily_ai_news 数组为空')
-      }
-
-      // 验证工具是否包含 last_update 字段（可选验证，不强制）
-      const allToolRanks = [
-        ...parsedData.ai_tools_rank.comprehensive,
-        ...parsedData.ai_tools_rank.coding,
-        ...parsedData.ai_tools_rank.image_gen,
-        ...parsedData.ai_tools_rank.video_gen,
-      ]
-      const hasAllLastUpdate = allToolRanks.every(tool => tool.last_update && typeof tool.last_update === 'string')
-      if (!hasAllLastUpdate) {
-        console.warn('⚠️ [AIRadar] 警告：部分工具缺少 last_update 字段')
-      }
-
-      // 4. 成功：更新状态并写入缓存（只有有效数据才写入）
-      console.log('✅ [AIRadar] 数据验证通过，准备更新状态')
-      console.log('📊 [AIRadar] 数据概览:', {
-        daily_ai_news: parsedData.daily_ai_news.length,
-        weekly_insight: !!parsedData.weekly_insight,
-        tools: {
-          comprehensive: parsedData.ai_tools_rank.comprehensive.length,
-          coding: parsedData.ai_tools_rank.coding.length,
-          image_gen: parsedData.ai_tools_rank.image_gen.length,
-          video_gen: parsedData.ai_tools_rank.video_gen.length,
+      // 防抖更新函数 - 减少渲染频率
+      const debouncedUpdate = (text: string) => {
+        const now = Date.now()
+        // 每 200ms 最多更新一次
+        if (now - lastUpdateTimeRef.current < 200) {
+          if (updateTimerRef.current) {
+            clearTimeout(updateTimerRef.current)
+          }
+          updateTimerRef.current = setTimeout(() => {
+            debouncedUpdate(text)
+          }, 200)
+          return
         }
-      })
-      
-      // 清除错误状态
-      setErrorState({ show: false, message: '' })
-      setRadarData(parsedData)
-      saveToCache(parsedData)
-      console.log('✅ [AIRadar] 数据获取成功，状态已更新')
+        
+        lastUpdateTimeRef.current = now
+        setStreamingText(text)
+        
+        // 只在文本足够长时才尝试解析（减少解析次数）
+        if (text.length > 100) {
+          try {
+            const parsed = cleanAndParseJSON(text)
+            if (parsed && parsed.daily_ai_news && Array.isArray(parsed.daily_ai_news) && parsed.daily_ai_news.length > 0) {
+              setPartialData(parsed)
+              setRadarData(parsed)
+              // 立即保存到全局状态（不等待防抖）- 确保切换页面时数据不丢失
+              // 注意：即使 isLoading 会被 partialize 设为 false，但 result 和 input 会被保存
+              setRadarState({ 
+                result: parsed, 
+                input: rawNews,
+                isLoading: true, // 仍在加载中（虽然会被 partialize 设为 false，但 result 会保存）
+                error: null 
+              })
+              console.log('💾 [AIRadar] 流式更新中保存部分数据到全局状态:', parsed.daily_ai_news.length, '条')
+            }
+          } catch (e) {
+            // 部分 JSON 解析失败是正常的，继续等待
+          }
+        }
+      }
+
+      while (true) {
+        const { done, value } = await reader.read()
+        
+        if (done) break
+
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() || '' // 保留最后一个不完整的行
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6))
+              
+              if (data.type === 'chunk') {
+                // 累积文本，使用防抖更新
+                accumulatedText += data.content
+                debouncedUpdate(accumulatedText)
+              } else if (data.type === 'done') {
+                // 清除定时器
+                if (updateTimerRef.current) {
+                  clearTimeout(updateTimerRef.current)
+                  updateTimerRef.current = null
+                }
+                
+                // 完成，解析最终 JSON
+                const finalText = data.fullText || accumulatedText
+                const parsedData = cleanAndParseJSON(finalText)
+                
+                // 验证数据
+                if (parsedData && 
+                    parsedData.daily_ai_news && Array.isArray(parsedData.daily_ai_news) &&
+                    parsedData.daily_ai_news.length > 0) {
+                  setRadarData(parsedData)
+                  setPartialData(null)
+                  setStreamingText('')
+                  accumulatedText = ''
+                  saveToCache(parsedData)
+                  // 立即保存到全局状态（不等待防抖）
+                  setRadarState({ 
+                    result: parsedData, 
+                    input: rawNews,
+                    isLoading: false,
+                    error: null 
+                  })
+                  console.log('✅ [AIRadar] 流式数据获取成功')
+                } else {
+                  throw new Error('返回数据格式不正确')
+                }
+              } else if (data.type === 'error') {
+                throw new Error(data.error || '流式处理错误')
+              }
+            } catch (e) {
+              console.warn('解析流数据失败:', e)
+            }
+          }
+        }
+      }
       
     } catch (error: any) {
-      clearTimeout(timeoutId)
-      console.error('🔴 [AIRadar] Error:', error)
+      console.error('🔴 [AIRadar] Stream Error:', error)
       
-      // 关键：将错误信息展示在 UI 上而不是显示空白
-      let errorMessage = error.message || '未知错误'
-      
-      // 处理超时错误
-      if (error.name === 'AbortError' || error.message?.includes('aborted')) {
-        // 如果是超时导致的 abort，错误信息已经在 timeout 中设置了
-        // 但为了确保显示，我们再次设置（setState 是幂等的）
-        errorMessage = '请求超时，请检查网络连接或稍后重试'
+      // 如果有部分数据，保留它
+      if (partialData && partialData.daily_ai_news && partialData.daily_ai_news.length > 0) {
+        console.log('⚠️ [AIRadar] 保留部分数据:', partialData.daily_ai_news.length, '条')
+        setRadarData(partialData)
+        // 立即保存到全局状态
+        setRadarState({ 
+          result: partialData, 
+          input: rawNews,
+          isLoading: false,
+          error: { show: true, message: `已生成 ${partialData.daily_ai_news.length} 条，但生成中断：${error.message}` }
+        })
+        setErrorState({ 
+          show: true, 
+          message: `已生成 ${partialData.daily_ai_news.length} 条，但生成中断：${error.message}` 
+        })
+      } else {
+        let errorMessage = error.message || '未知错误'
+        if (error.name === 'AbortError') {
+          errorMessage = '请求已取消'
+        }
+        
+        setErrorState({ show: true, message: errorMessage })
+        setRadarState({ 
+          isLoading: false,
+          error: { show: true, message: errorMessage }
+        })
       }
-      
-      let userFriendlyMessage = errorMessage // 默认显示具体错误信息
-      
-      // 针对特定错误类型提供友好提示
-      if (errorMessage.includes('401') || 
-          errorMessage.includes('Unauthorized') ||
-          errorMessage.includes('内部服务连接失败') ||
-          errorMessage.includes('VPN')) {
-        userFriendlyMessage = `内部服务连接失败：${errorMessage}`
-      } else if (errorMessage.includes('429')) {
-        userFriendlyMessage = `请求过于频繁：${errorMessage}`
-      } else if (errorMessage.includes('解析') || errorMessage.includes('JSON')) {
-        userFriendlyMessage = `数据解析失败：${errorMessage}。请查看控制台获取详细信息。`
-      }
-      
-      setErrorState({
-        show: true,
-        message: userFriendlyMessage,
-      })
-      
-      // 失败时清除脏缓存
-      localStorage.removeItem(CACHE_KEY)
-      localStorage.removeItem(TIME_KEY)
     } finally {
-      // 确保状态总是被重置
-      console.log('✅ [AIRadar] analyzeNews 完成，重置状态')
+      // 清除定时器
+      if (updateTimerRef.current) {
+        clearTimeout(updateTimerRef.current)
+        updateTimerRef.current = null
+      }
       setIsAnalyzing(false)
+      setStreamingText('')
+      abortControllerRef.current = null
+      
+      // 确保最终状态保存（使用最新状态，包括 partialData）
+      // 使用 setTimeout 确保状态已更新
+      setTimeout(() => {
+        const currentData = radarData || partialData
+        if (currentData) {
+          setRadarState({
+            result: currentData,
+            input: rawNews,
+            isLoading: false,
+            error: errorState.show ? errorState : null,
+          })
+          console.log('💾 [AIRadar] 最终状态已保存到全局 Store')
+        }
+      }, 100)
     }
   }
+
+  // 分析新闻（保留旧版本作为后备）
+  const analyzeNews = analyzeNewsStream
 
   // 工具子榜单配置
   const toolSubTabs: { key: ToolSubTabType; label: string; icon: any }[] = [
@@ -459,7 +642,7 @@ export default function AIRadarPage() {
               <div className="mb-4">
                 <div className="inline-flex items-center gap-3">
                   <span className="text-sm font-medium text-gemini-text">
-                    正在分析数据...
+                    {isAnalyzing && streamingText ? '正在生成...' : '正在分析数据...'}
                   </span>
                   <div className="flex gap-1.5 items-center">
                     <div className="w-2 h-2 bg-black rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
@@ -471,12 +654,21 @@ export default function AIRadarPage() {
               <p className="text-xs text-gemini-text-secondary mt-2">
                 {isFetching ? '正在获取新闻源...' : '正在生成设计情报...'}
               </p>
+              {/* 流式文本预览 */}
+              {isAnalyzing && streamingText && (
+                <div className="mt-4 p-4 bg-gemini-bg rounded-2xl text-left">
+                  <p className="text-xs text-gemini-text-secondary mb-2">实时生成中...</p>
+                  <pre className="text-xs text-gemini-text font-mono whitespace-pre-wrap break-words max-h-32 overflow-y-auto">
+                    {streamingText.slice(-500)}
+                  </pre>
+                </div>
+              )}
             </div>
           </div>
         )}
 
-        {/* 第二优先级：错误状态（如果有错误，必须显示，不显示空状态） */}
-        {!isFetching && !isAnalyzing && errorState.show && (
+        {/* 第二优先级：错误状态（如果有错误且没有数据，显示错误；如果有数据，错误提示在数据下方显示） */}
+        {!isFetching && !isAnalyzing && errorState.show && !radarData && (
           <div className="mb-6 p-6 bg-red-50 border border-red-200 rounded-3xl flex flex-col items-center gap-4">
             <div className="text-red-600 font-bold text-base">⚠️ 获取情报失败</div>
             <div className="text-red-500 text-sm font-mono break-all max-w-full text-center px-4">
@@ -492,8 +684,8 @@ export default function AIRadarPage() {
           </div>
         )}
 
-        {/* 第三优先级：数据内容 */}
-        {!isFetching && !isAnalyzing && radarData && !errorState.show && (
+        {/* 第三优先级：数据内容（即使有错误提示，如果有数据也要显示） */}
+        {radarData && (
           <>
             {/* Tab 切换 */}
             <div className="mb-6 flex flex-wrap gap-2">
@@ -566,15 +758,36 @@ export default function AIRadarPage() {
                           <h3 className="text-base font-semibold text-gemini-text mb-2">
                             {news.title}
                           </h3>
-                          <p className="text-sm text-gemini-text-secondary mb-4">
-                            {news.content}
-                          </p>
+                          {/* 支持新旧两种格式 */}
+                          {news.insight ? (
+                            <div className="space-y-2 mb-4">
+                              <p className="text-sm text-gemini-text font-medium">
+                                {news.insight}
+                              </p>
+                              {news.tags && news.tags.length > 0 && (
+                                <div className="flex flex-wrap gap-1.5">
+                                  {news.tags.map((tag, tagIdx) => (
+                                    <span
+                                      key={tagIdx}
+                                      className="px-2 py-0.5 bg-gemini-surface text-xs text-gemini-text-secondary rounded-full"
+                                    >
+                                      {tag}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          ) : (
+                            <p className="text-sm text-gemini-text-secondary mb-4">
+                              {news.content}
+                            </p>
+                          )}
                           {news.url && (
                             <a
                               href={news.url}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-2 text-sm text-gemini-text-secondary hover:text-gemini-text transition-colors"
+                              className="inline-flex items-center gap-2 text-sm text-gemini-text-secondary hover:text-gemini-text transition-colors mb-4"
                             >
                               <ExternalLink size={14} />
                               查看原文
@@ -583,23 +796,28 @@ export default function AIRadarPage() {
                         </div>
                       </div>
 
+                      {/* 对设计的影响和可发散利用空间（必需显示） */}
                       <div className="space-y-3 pl-9">
-                        <div className="p-3 bg-gemini-bg rounded-2xl">
-                          <div className="text-xs font-medium text-gemini-text-secondary mb-1">
-                            对设计行业的影响
+                        {news.design_impact && (
+                          <div className="p-3 bg-gemini-bg rounded-2xl">
+                            <div className="text-xs font-medium text-gemini-text-secondary mb-1">
+                              对设计行业的影响
+                            </div>
+                            <p className="text-sm text-gemini-text">
+                              {news.design_impact}
+                            </p>
                           </div>
-                          <p className="text-sm text-gemini-text">
-                            {news.design_impact}
-                          </p>
-                        </div>
-                        <div className="p-3 bg-gemini-bg rounded-2xl">
-                          <div className="text-xs font-medium text-gemini-text-secondary mb-1">
-                            可发散利用空间
+                        )}
+                        {news.potential_usage && (
+                          <div className="p-3 bg-gemini-bg rounded-2xl">
+                            <div className="text-xs font-medium text-gemini-text-secondary mb-1">
+                              可发散利用空间
+                            </div>
+                            <p className="text-sm text-gemini-text">
+                              {news.potential_usage}
+                            </p>
                           </div>
-                          <p className="text-sm text-gemini-text">
-                            {news.potential_usage}
-                          </p>
-                        </div>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -705,6 +923,15 @@ export default function AIRadarPage() {
               </div>
             )}
           </>
+        )}
+
+        {/* 数据下方的错误提示（如果有数据但仍有错误提示） */}
+        {radarData && errorState.show && (
+          <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-2xl">
+            <div className="text-yellow-700 text-sm">
+              ⚠️ {errorState.message}
+            </div>
+          </div>
         )}
 
         {/* 第四优先级：空状态（只有在没有错误、没有数据、不在加载时才显示） */}

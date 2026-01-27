@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { Upload, X, ThumbsUp, ThumbsDown, Sparkles, CheckCircle2, FileSearch, Square } from 'lucide-react'
+import MemoryToast from '@/components/MemoryToast'
+import { useMemoryExtraction } from '@/hooks/useMemoryExtraction'
 
 interface ProposalFeedback {
   id: string
@@ -33,6 +35,14 @@ interface AestheticStyle {
 }
 
 export default function ProposalReviewPage() {
+  // 使用全局记忆提取 Hook
+  const {
+    suggestion: memoryUpdateSuggestion,
+    extractMemory,
+    confirmMemory,
+    ignoreMemory,
+  } = useMemoryExtraction()
+  
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [aiJudgment, setAiJudgment] = useState<string>('')
@@ -60,6 +70,8 @@ export default function ProposalReviewPage() {
 
   // 从 LocalStorage 加载历史反馈和风格库
   useEffect(() => {
+    if (typeof window === 'undefined') return
+    
     const saved = localStorage.getItem('proposal-memory')
     if (saved) {
       try {
@@ -134,7 +146,7 @@ export default function ProposalReviewPage() {
       preferences: { goodPatterns: [], badPatterns: [] },
     }
     
-    if (enableMemory) {
+    if (enableMemory && typeof window !== 'undefined') {
       const saved = localStorage.getItem('proposal-memory')
       if (saved) {
         try {
@@ -147,7 +159,7 @@ export default function ProposalReviewPage() {
 
     // 读取知识库（如果启用）
     let knowledgeCards: any[] = []
-    if (useTeamWisdom) {
+    if (useTeamWisdom && typeof window !== 'undefined') {
       try {
         const saved = localStorage.getItem('team-wisdom')
         if (saved) {
@@ -210,6 +222,12 @@ export default function ProposalReviewPage() {
         }
         
         setAiJudgment(judgment)
+        
+        // 后台静默分析记忆（不阻塞用户）
+        // 使用图片分析结果作为用户输入，AI判断作为回复
+        setTimeout(() => {
+          extractMemory('分析设计方案', judgment)
+        }, 500)
       } else {
         throw new Error(data.error || '分析失败')
       }
@@ -345,17 +363,18 @@ export default function ProposalReviewPage() {
     }
 
     // 保存到 LocalStorage
-    try {
-      localStorage.setItem('proposal-memory', JSON.stringify(updatedMemory))
-      setMemory(updatedMemory)
-      setUserFeedback(null)
-      setUserComment('')
-      setIsSubmittingFeedback(false)
-      alert('反馈已保存！这会影响后续的判断。')
-    } catch (e) {
-      console.error('Failed to save feedback:', e)
-      setIsSubmittingFeedback(false)
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('proposal-memory', JSON.stringify(updatedMemory))
+        setMemory(updatedMemory)
+        setUserFeedback(null)
+        setUserComment('')
+        alert('反馈已保存！这会影响后续的判断。')
+      } catch (e) {
+        console.error('Failed to save feedback:', e)
+      }
     }
+    setIsSubmittingFeedback(false)
   }
 
   // 提取关键词（简单实现）
@@ -808,6 +827,14 @@ export default function ProposalReviewPage() {
           </div>
         </div>
       </div>
+      
+      {/* 全局记忆更新 Toast 通知 */}
+      <MemoryToast
+        suggestion={memoryUpdateSuggestion}
+        onConfirm={confirmMemory}
+        onIgnore={ignoreMemory}
+        onClose={ignoreMemory}
+      />
     </div>
   )
 }

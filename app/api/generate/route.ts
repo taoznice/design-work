@@ -34,14 +34,32 @@ interface MemoryContext {
   vocabulary?: string[]
 }
 
+export const maxDuration = 60 // Vercel 超时配置
+
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json()
+    let body: any
+    try {
+      body = await request.json()
+    } catch (parseError) {
+      console.error('Failed to parse request body:', parseError)
+      return NextResponse.json(
+        { 
+          error: '请求数据格式错误',
+          details: '无法解析请求体 JSON 数据'
+        },
+        { status: 400 }
+      )
+    }
+    
     const { query, memoryContext, customPersona, imageAnalysis, useTeamWisdom, enableMemory } = body
 
     if (!query && !imageAnalysis) {
       return NextResponse.json(
-        { error: 'query 或 imageAnalysis 至少需要一个' },
+        { 
+          error: 'query 或 imageAnalysis 至少需要一个',
+          details: '请提供文本查询或图片分析内容'
+        },
         { status: 400 }
       )
     }

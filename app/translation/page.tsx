@@ -2,8 +2,18 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { Languages, Upload, X, Square, Sparkles, Trash2 } from 'lucide-react'
+import MemoryToast from '@/components/MemoryToast'
+import { useMemoryExtraction } from '@/hooks/useMemoryExtraction'
 
 export default function TranslationPage() {
+  // 使用全局记忆提取 Hook
+  const {
+    suggestion: memoryUpdateSuggestion,
+    extractMemory,
+    confirmMemory,
+    ignoreMemory,
+  } = useMemoryExtraction()
+  
   const [inputText, setInputText] = useState('')
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [imageFile, setImageFile] = useState<File | null>(null)
@@ -19,6 +29,8 @@ export default function TranslationPage() {
 
   // Command+Enter 快捷键
   useEffect(() => {
+    if (typeof window === 'undefined') return
+    
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
         e.preventDefault()
@@ -147,12 +159,22 @@ export default function TranslationPage() {
       const data = await response.json()
 
       if (data.success) {
+        let translationResult = ''
         if (selectedImage) {
           // 图片翻译结果
-          setOutput(data.data?.analysis || data.data?.translation || '翻译完成')
+          translationResult = data.data?.analysis || data.data?.translation || '翻译完成'
+          setOutput(translationResult)
         } else {
           // 文本翻译结果
-          setOutput(data.data?.response || '翻译完成')
+          translationResult = data.data?.response || '翻译完成'
+          setOutput(translationResult)
+        }
+        
+        // 后台静默分析记忆（不阻塞用户）
+        if (inputText.trim()) {
+          setTimeout(() => {
+            extractMemory(inputText.trim(), translationResult)
+          }, 500)
         }
       } else {
         throw new Error(data.error || '翻译失败')
@@ -401,6 +423,14 @@ export default function TranslationPage() {
           </div>
         </div>
       </div>
+      
+      {/* 全局记忆更新 Toast 通知 */}
+      <MemoryToast
+        suggestion={memoryUpdateSuggestion}
+        onConfirm={confirmMemory}
+        onIgnore={ignoreMemory}
+        onClose={ignoreMemory}
+      />
     </div>
   )
 }

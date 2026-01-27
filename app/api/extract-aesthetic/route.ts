@@ -16,14 +16,28 @@ function createOpenAIClient() {
   })
 }
 
+// Vercel 超时配置
+export const maxDuration = 60
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { imageBase64, imageUrl } = body
+    const { imagesBase64, imageBase64, imageUrl } = body
 
-    if (!imageBase64 && !imageUrl) {
+    // 支持多图或单图
+    const images = imagesBase64 || (imageBase64 ? [imageBase64] : [])
+
+    if (images.length === 0 && !imageUrl) {
       return NextResponse.json(
         { error: '图片数据不能为空' },
+        { status: 400 }
+      )
+    }
+
+    // 限制最多 6 张图片
+    if (images.length > 6) {
+      return NextResponse.json(
+        { error: '最多只能上传 6 张图片' },
         { status: 400 }
       )
     }
@@ -41,7 +55,22 @@ export async function POST(request: NextRequest) {
     }
 
     // 构建系统提示词 - 专注于风格特征提取
-    const systemMessage = `你是一个专业的视觉风格分析专家。你的任务是分析图片的**风格特征**，而不是具体内容。
+    const systemMessage = images.length > 1 
+      ? `你是一个专业的视觉风格分析专家。你的任务是综合分析多张图片的**风格特征**，找出它们的共性和视觉风格特点。
+
+**重要要求**：
+1. 忽略图片中的具体内容（比如画的是猫还是狗，写的是什么文字）
+2. 专注于提取**视觉风格特征**：配色方案、构图手法、视觉情绪、设计风格
+3. 综合分析这几张图片的视觉风格、配色和构图共性
+4. 必须返回 JSON 格式，包含以下字段：
+   - title: 风格的简短名称（如"极简主义"、"赛博朋克"）
+   - keywords: 风格关键词数组（如["极简", "黑白", "几何"]）
+   - colorPalette: 主要配色的 Hex 代码数组（如["#000000", "#FFFFFF", "#FF0000"]）
+   - mood: 视觉情绪（如"冷静"、"活泼"、"焦虑"）
+   - composition: 构图手法分析（如"对称构图"、"黄金分割"、"留白为主"）
+
+**输出格式**：必须是有效的 JSON 对象，不要包含任何 Markdown 格式或额外文字。`
+      : `你是一个专业的视觉风格分析专家。你的任务是分析图片的**风格特征**，而不是具体内容。
 
 **重要要求**：
 1. 忽略图片中的具体内容（比如画的是猫还是狗，写的是什么文字）
@@ -61,22 +90,26 @@ export async function POST(request: NextRequest) {
     const content: any[] = [
       {
         type: 'text',
-        text: '请分析这张图片的风格特征，忽略具体内容，专注于提取视觉风格、配色、构图和情绪。返回 JSON 格式。'
+        text: images.length > 1 
+          ? '请综合分析这几张图片的视觉风格、配色和构图共性。忽略具体内容，专注于提取视觉风格、配色、构图和情绪。返回 JSON 格式。'
+          : '请分析这张图片的风格特征，忽略具体内容，专注于提取视觉风格、配色、构图和情绪。返回 JSON 格式。'
       }
     ]
     
-    // 添加图片
-    if (imageBase64) {
-      const base64Data = imageBase64.includes(',') 
-        ? imageBase64.split(',')[1] 
-        : imageBase64
-      
-      content.push({
-        type: 'image_url',
-        image_url: {
-          url: `data:image/jpeg;base64,${base64Data}`
-        }
-      })
+    // 添加多张图片
+    if (images.length > 0) {
+      for (const img of images) {
+        const base64Data = img.includes(',') 
+          ? img.split(',')[1] 
+          : img
+        
+        content.push({
+          type: 'image_url',
+          image_url: {
+            url: `data:image/jpeg;base64,${base64Data}`
+          }
+        })
+      }
     } else if (imageUrl) {
       content.push({
         type: 'image_url',
