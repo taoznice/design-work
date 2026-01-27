@@ -1,7 +1,31 @@
 import { NextRequest, NextResponse } from 'next/server'
 import Parser from 'rss-parser'
 
-const parser = new Parser()
+// 配置自定义 fetch，添加 User-Agent headers 以避免被拒绝
+const customFetch = async (url: string, options?: any) => {
+  return fetch(url, {
+    ...options,
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Accept': 'application/rss+xml, application/xml, text/xml, */*',
+      'Accept-Language': 'en-US,en;q=0.9',
+      ...options?.headers,
+    },
+  })
+}
+
+// 配置 parser 使用自定义 fetch
+const parser = new Parser({
+  customFields: {
+    item: ['media:content', 'media:thumbnail'],
+  },
+  requestOptions: {
+    headers: {
+      'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+      'Accept': 'application/rss+xml, application/xml, text/xml, */*',
+    },
+  },
+})
 
 // 定义 RSS 源（多源聚合）
 const RSS_FEEDS = [
@@ -19,12 +43,13 @@ const RSS_FEEDS = [
   },
   {
     name: 'Fast Company Design',
-    url: 'https://www.fastcompany.com/design/rss.xml',
+    url: 'https://www.fastcompany.com/co-design/rss',
   },
-  {
-    name: 'Designer News',
-    url: 'https://www.designernews.co/?format=rss',
-  },
+  // Designer News 网站可能已不可用，暂时注释
+  // {
+  //   name: 'Designer News',
+  //   url: 'https://www.designernews.co/?format=rss',
+  // },
   {
     name: 'Smashing Magazine',
     url: 'https://www.smashingmagazine.com/feed/',
@@ -88,23 +113,45 @@ export async function GET(request: NextRequest) {
     // 循环抓取所有 RSS 源
     for (const feed of RSS_FEEDS) {
       try {
-        const feedData = await parser.parseURL(feed.url)
+        // 使用自定义 fetch 获取 RSS，添加超时和重试机制
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 10000) // 10秒超时
         
-        if (feedData.items) {
-          feedData.items.slice(0, 10).forEach((item) => {
-            if (item.title && item.link) {
-              allNews.push({
-                title: item.title,
-                link: item.link,
-                pubDate: item.pubDate || undefined,
-                source: feed.name,
-              })
-            }
+        try {
+          const response = await customFetch(feed.url, {
+            signal: controller.signal,
           })
+          clearTimeout(timeoutId)
+          
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+          }
+          
+          const text = await response.text()
+          const feedData = await parser.parseString(text)
+          
+          if (feedData.items) {
+            feedData.items.slice(0, 10).forEach((item) => {
+              if (item.title && item.link) {
+                allNews.push({
+                  title: item.title,
+                  link: item.link,
+                  pubDate: item.pubDate || undefined,
+                  source: feed.name,
+                })
+              }
+            })
+          }
+        } catch (fetchError: any) {
+          clearTimeout(timeoutId)
+          if (fetchError.name === 'AbortError') {
+            throw new Error('请求超时')
+          }
+          throw fetchError
         }
       } catch (error) {
-        console.error(`Failed to fetch ${feed.name}:`, error)
-        // 继续处理其他源
+        console.error(`获取 ${feed.name} 失败：`, error)
+        // 继续处理其他源，不中断整个流程
       }
     }
 
