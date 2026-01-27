@@ -41,10 +41,11 @@ const RSS_FEEDS = [
     name: 'The Verge',
     url: 'https://www.theverge.com/rss/index.xml',
   },
-  {
-    name: 'Fast Company Design',
-    url: 'https://www.fastcompany.com/co-design/rss',
-  },
+  // Fast Company Design RSS feed 已不可用，暂时移除
+  // {
+  //   name: 'Fast Company Design',
+  //   url: 'https://www.fastcompany.com/co-design/rss',
+  // },
   // Designer News 网站可能已不可用，暂时注释
   // {
   //   name: 'Designer News',
