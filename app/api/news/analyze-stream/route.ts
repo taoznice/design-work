@@ -19,19 +19,31 @@ function createOpenAIClient() {
   })
 }
 
-// 获取当前日期并生成周度标签
-function getCurrentWeekLabel(): string {
+// 获取当前月份标签
+function getCurrentMonthLabel(): string {
   const now = new Date()
   const year = now.getFullYear()
   const month = now.getMonth() + 1
   
-  const firstDay = new Date(year, month - 1, 1)
-  const dayOfWeek = firstDay.getDay()
-  const date = now.getDate()
+  return `${year}年${month}月`
+}
+
+// 生成最近4个月的月度标签列表（最新月份在前）
+function getLast4MonthsLabels(): string[] {
+  const labels: string[] = []
+  const now = new Date()
   
-  const weekNumber = Math.ceil((date + dayOfWeek) / 7)
+  for (let i = 0; i < 4; i++) {
+    const date = new Date(now.getFullYear(), now.getMonth() - i, 1) // 往前推 i 个月
+    
+    const year = date.getFullYear()
+    const month = date.getMonth() + 1
+    
+    labels.push(`${year}年${month}月`)
+  }
   
-  return `${year}年${month}月 第${weekNumber}周`
+  // 最新月份已经在前面，不需要 reverse
+  return labels
 }
 
 export async function POST(request: NextRequest) {
@@ -39,7 +51,8 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { newsData } = body
     
-    const currentWeekLabel = getCurrentWeekLabel()
+    const currentMonthLabel = getCurrentMonthLabel()
+    const last4MonthsLabels = getLast4MonthsLabels()
 
     if (!newsData || !Array.isArray(newsData) || newsData.length === 0) {
       return new Response(
@@ -83,14 +96,33 @@ export async function POST(request: NextRequest) {
      * url: 新闻原文链接（如果原始新闻列表中有链接，请使用该链接；如果没有，请留空字符串 ""）
    - **极度精简**：每个字段控制在指定字数以内，只保留核心信息。
 
-4. **工具风向标 (Tools Rank)**:
-   - **数量**：4个分类（综合、Coding、生图、视频），每个分类必须返回 **Top 10**。
-   - **新增字段**：每个工具必须包含 \`last_update\` (最新迭代时间，例如 '2024-01' 或 'V6.0')。
+4. **月度AI趋势 (Monthly AI Trends)**:
+   - **数量**：必须返回 **最近4个月** 的AI设计趋势总结（最新月份在前）。
+   - **格式**：数组，每个元素包含 date_label 和 content。
+   - **内容要求**：每段总结控制在 200-300 字，聚焦该月的AI设计行业关键趋势、技术突破、工具更新、设计方法论演进等。
+   - **时间排序**：最新月份（当前月）排在最前面，依次往前推。
 
-5. **数据结构**：
+5. **工具风向标 (Tools Rank)**:
+   - **数量**：4个分类（综合、Coding、生图、视频），每个分类必须返回 **Top 10**。
+   - **排名原则（极其重要）**：
+     * **必须基于客观数据排序**：根据工具的实际市场占有率、用户量、技术先进性、社区活跃度、最新版本迭代等客观指标进行排名。
+     * **不要受工具列表顺序影响**：下面列出的工具列表仅用于确保不遗漏主流工具，列表中的顺序**不代表排名顺序**，请完全忽略列表顺序。
+     * **客观评估标准**：考虑因素包括但不限于：用户基数、市场影响力、技术成熟度、更新频率、社区评价、实际使用率等。
+   - **必须包含的主流工具**（仅用于查漏补缺，顺序不代表排名）：
+     * **综合类**：Cursor, GitHub Copilot, ChatGPT, Claude, Notion AI, Framer, Webflow AI, V0
+     * **Coding类**：Cursor, GitHub Copilot, Codeium, Tabnine, Replit, Codium, Sourcegraph Cody
+     * **生图类**：Midjourney v6, DALL-E 3, Stable Diffusion XL, Adobe Firefly, Runway ML, Leonardo AI, Ideogram
+     * **视频类**：Runway ML, Pika, Synthesia, D-ID, HeyGen, Kling AI, Stable Video Diffusion
+   - **新增字段**：每个工具必须包含 \`last_update\` (最新迭代时间，例如 '2024-01' 或 'V6.0')。
+   - **客观性要求**：基于当前行业真实数据，确保榜单客观准确。如果发现遗漏上述主流工具，必须补充进去，但补充时也要根据客观数据确定其排名位置。
+
+6. **数据结构**：
    严格返回以下 JSON (不要 Markdown):
    {
-     "weekly_insight": { "date_label": "YYYY年M月W周", "content": "..." },
+     "monthly_trends": [
+       { "date_label": "YYYY年M月", "content": "..." },
+       // ... 4 items (最近4个月，最新月份在前)
+     ],
      "daily_ai_news": [
        { "title": "...", "insight": "...", "tags": ["...", "..."], "design_impact": "...", "potential_usage": "...", "url": "..." },
        // ... 5 items
@@ -107,7 +139,9 @@ export async function POST(request: NextRequest) {
 - 只返回纯 JSON，不要任何 Markdown 代码块标记，不要任何解释文字。
 - 所有文本内容必须为中文。
 - daily_ai_news 必须严格筛选与设计行业强相关的新闻，必须返回 5 条。
-- weekly_insight.date_label 必须使用系统提供的当前日期，不要使用其他日期。`
+- monthly_trends 必须返回最近4个月的AI设计趋势总结，使用系统提供的月度标签：${last4MonthsLabels.join(', ')}。最新月份（${last4MonthsLabels[0]}）排在最前面。
+- ai_tools_rank 必须包含上述主流工具（Cursor, Midjourney v6, Framer 等），确保榜单客观且完整。
+- **关键提醒**：工具榜单的排名必须完全基于客观数据，不要受工具列表顺序影响。例如，Cursor 在列表中排在前面，不代表它应该排第一，请根据实际市场数据和用户反馈客观评估排名。`
 
     const openai = createOpenAIClient()
 
@@ -121,7 +155,7 @@ export async function POST(request: NextRequest) {
         },
         {
           role: 'user',
-          content: `当前系统日期：${currentWeekLabel}\n\n这是从 RSS 源抓取到的最新科技新闻列表（可能包含英文内容）：\n\n${newsListText}\n\n请作为对技术极度敏感的资深设计总监，结合你的知识库，生成一份针对设计行业的 AI 情报简报。要求：
+          content: `当前系统日期：${currentMonthLabel}\n\n这是从 RSS 源抓取到的最新科技新闻列表（可能包含英文内容）：\n\n${newsListText}\n\n请作为对技术极度敏感的资深设计总监，结合你的知识库，生成一份针对设计行业的 AI 情报简报。要求：
 1. 将所有英文内容翻译为流畅的中文
 2. 严格筛选与设计行业强相关的新闻，生成 **5条** daily_ai_news，每条必须包含：
    - title: 标题（20字以内）
@@ -132,14 +166,22 @@ export async function POST(request: NextRequest) {
    - url: 新闻原文链接（如果原始新闻列表中有链接，请使用该链接；如果没有，请留空字符串 ""）
    - 筛选标准：只收录与设计行业强相关的内容
    - **极度精简**：每个字段控制在指定字数以内，只保留核心信息
-3. 生成 weekly_insight，包含：
-   - date_label: 必须使用 "${currentWeekLabel}"（这是当前系统日期，不要使用其他日期）
-   - content: 200字左右的深度趋势总结
+3. 生成 monthly_trends（最近4个月AI设计趋势），包含：
+   - 必须返回4个月的总结，使用系统提供的月度标签：${last4MonthsLabels.join(', ')}
+   - 每个总结包含 date_label 和 content（200-300字）
+   - **时间排序**：最新月份（${last4MonthsLabels[0]}）排在最前面，依次往前推
+   - **内容聚焦**：主要围绕AI设计相关的主题，包括技术突破、工具更新、设计方法论演进、行业趋势等
 4. 生成 ai_tools_rank，包含 4 个子榜单，每个榜单 **Top 10**，每个工具必须包含：
-   - rank: 排名
+   - rank: 排名（必须基于客观数据排序，不要受工具列表顺序影响）
    - name: 工具名称（中文）
-   - reason: 推荐理由（中文）
+   - reason: 推荐理由（中文，说明为什么这个排名是客观的）
    - last_update: 最新迭代时间（例如 '2024-01' 或 'V6.0'）
+   - **排名原则**：必须根据工具的实际市场占有率、用户量、技术先进性、社区活跃度等客观指标进行排序，不要因为工具在列表中的位置而影响排名。
+   - **必须包含的主流工具**（仅用于查漏补缺，顺序不代表排名）：
+     * **综合类**：Cursor, GitHub Copilot, ChatGPT, Claude, Notion AI, Framer, Webflow AI, V0
+     * **Coding类**：Cursor, GitHub Copilot, Codeium, Tabnine, Replit, Codium, Sourcegraph Cody
+     * **生图类**：Midjourney v6, DALL-E 3, Stable Diffusion XL, Adobe Firefly, Runway ML, Leonardo AI, Ideogram
+     * **视频类**：Runway ML, Pika, Synthesia, D-ID, HeyGen, Kling AI, Stable Video Diffusion
 
 所有内容必须为中文。只返回纯 JSON 格式，不要包含任何 Markdown 标记。`,
         },

@@ -30,10 +30,19 @@ interface ToolItem {
 }
 
 interface RadarData {
-  weekly_insight: {
+  // 向后兼容：支持旧格式 weekly_insight/weekly_insights 和新格式 monthly_trends
+  weekly_insight?: {
     date_label: string
     content: string
   }
+  weekly_insights?: Array<{
+    date_label: string
+    content: string
+  }>
+  monthly_trends?: Array<{
+    date_label: string
+    content: string
+  }>
   daily_ai_news: DailyAINews[]
   ai_tools_rank: {
     comprehensive: ToolItem[]
@@ -141,10 +150,12 @@ export default function AIRadarPage() {
       if (cachedData) {
         const parsed = JSON.parse(cachedData) as RadarData
         
-        // 验证缓存数据有效性
+        // 验证缓存数据有效性（支持新旧多种格式）
         if (parsed && 
             parsed.daily_ai_news && Array.isArray(parsed.daily_ai_news) && parsed.daily_ai_news.length > 0 &&
-            parsed.weekly_insight && parsed.weekly_insight.date_label && parsed.weekly_insight.content &&
+            (parsed.weekly_insight || 
+             (parsed.weekly_insights && Array.isArray(parsed.weekly_insights)) ||
+             (parsed.monthly_trends && Array.isArray(parsed.monthly_trends))) &&
             parsed.ai_tools_rank) {
           console.log('🟢 [AIRadar] 命中缓存')
           return parsed
@@ -167,10 +178,12 @@ export default function AIRadarPage() {
   const saveToCache = (data: RadarData) => {
     if (typeof window === 'undefined') return
     try {
-      // 验证数据有效性
+      // 验证数据有效性（支持新旧多种格式）
       if (!data || 
           !data.daily_ai_news || !Array.isArray(data.daily_ai_news) || data.daily_ai_news.length === 0 ||
-          !data.weekly_insight || !data.weekly_insight.date_label || !data.weekly_insight.content ||
+          (!data.weekly_insight && 
+           (!data.weekly_insights || !Array.isArray(data.weekly_insights)) &&
+           (!data.monthly_trends || !Array.isArray(data.monthly_trends))) ||
           !data.ai_tools_rank) {
         console.warn('⚠️ [AIRadar] 数据无效，不写入缓存')
         return
@@ -715,7 +728,7 @@ export default function AIRadarPage() {
                 `}
               >
                 <Lightbulb size={16} />
-                周度聚合
+                月度AI趋势
               </button>
               <button
                 onClick={() => setActiveTab('tools')}
@@ -825,28 +838,83 @@ export default function AIRadarPage() {
               </div>
             )}
 
-            {/* Tab 2: 周度聚合 */}
+            {/* Tab 2: 月度AI趋势（最近4个月） */}
             {activeTab === 'insight' && (
               <div className="space-y-4">
                 <div className="flex items-center gap-2 mb-6">
                   <Lightbulb size={20} className="text-black" />
                   <h2 className="text-lg font-semibold text-gemini-text">
-                    周度聚合
+                    月度AI趋势（最近4个月）
                   </h2>
                 </div>
 
-                <div className="bg-gemini-surface rounded-3xl p-8">
-                  <div className="max-w-4xl mx-auto">
-                    <div className="mb-4">
-                      <span className="inline-block px-3 py-1 bg-black text-white text-xs font-medium rounded-full">
-                        {radarData.weekly_insight.date_label}
-                      </span>
+                {/* 优先显示新的月度趋势格式，向后兼容旧格式 */}
+                {radarData.monthly_trends && Array.isArray(radarData.monthly_trends) && radarData.monthly_trends.length > 0 ? (
+                  <div className="space-y-4">
+                    {radarData.monthly_trends.map((trend, index) => (
+                      <div key={index} className="bg-gemini-surface rounded-3xl p-6 md:p-8">
+                        <div className="max-w-4xl mx-auto">
+                          <div className="mb-4">
+                            <span className="inline-block px-3 py-1.5 bg-black text-white text-xs font-medium rounded-full">
+                              {trend.date_label}
+                            </span>
+                          </div>
+                          <p className="text-base md:text-lg text-gemini-text leading-relaxed whitespace-pre-wrap font-light">
+                            {trend.content}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : radarData.weekly_insights && Array.isArray(radarData.weekly_insights) && radarData.weekly_insights.length > 0 ? (
+                  // 向后兼容：显示旧的周度数据
+                  <div className="space-y-4">
+                    <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-2xl">
+                      <p className="text-xs text-yellow-700">
+                        ⚠️ 这是旧格式的周度数据，请刷新获取最新的月度趋势
+                      </p>
                     </div>
-                    <p className="text-lg text-gemini-text leading-relaxed whitespace-pre-wrap font-light">
-                      {radarData.weekly_insight.content}
+                    {radarData.weekly_insights.map((insight, index) => (
+                      <div key={index} className="bg-gemini-surface rounded-3xl p-6 md:p-8">
+                        <div className="max-w-4xl mx-auto">
+                          <div className="mb-4">
+                            <span className="inline-block px-3 py-1 bg-black text-white text-xs font-medium rounded-full">
+                              {insight.date_label}
+                            </span>
+                          </div>
+                          <p className="text-base md:text-lg text-gemini-text leading-relaxed whitespace-pre-wrap font-light">
+                            {insight.content}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : radarData.weekly_insight ? (
+                  // 向后兼容：显示单个周度数据
+                  <div className="bg-gemini-surface rounded-3xl p-8">
+                    <div className="max-w-4xl mx-auto">
+                      <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-2xl">
+                        <p className="text-xs text-yellow-700">
+                          ⚠️ 这是旧格式的周度数据，请刷新获取最新的月度趋势
+                        </p>
+                      </div>
+                      <div className="mb-4">
+                        <span className="inline-block px-3 py-1 bg-black text-white text-xs font-medium rounded-full">
+                          {radarData.weekly_insight.date_label}
+                        </span>
+                      </div>
+                      <p className="text-lg text-gemini-text leading-relaxed whitespace-pre-wrap font-light">
+                        {radarData.weekly_insight.content}
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-gemini-surface rounded-3xl p-8 text-center">
+                    <p className="text-sm text-gemini-text-secondary">
+                      暂无月度趋势数据
                     </p>
                   </div>
-                </div>
+                )}
               </div>
             )}
 
