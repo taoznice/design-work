@@ -400,7 +400,7 @@ export default function AestheticCollectionPage() {
                       }}
                     />
                     <button
-                      onClick={handleRemoveImage}
+                      onClick={() => setImageUrl('')}
                       className="absolute top-2 right-2 p-1.5 bg-white rounded-full shadow-sm hover:bg-gray-50"
                     >
                       <X size={16} className="text-gray-600" />

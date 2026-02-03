@@ -169,14 +169,15 @@ ${aiResponse}
       },
     })
   } catch (error: any) {
-    console.error('Extract Memory API Error:', error)
+    console.error("后端捕获到错误:", error);
     
-    // 静默失败，返回null
-    return NextResponse.json({
-      success: true,
-      data: {
-        suggestion: null,
-      },
-    })
+    // 关键：把错误消息包装成 JSON 发给前端
+    return new Response(JSON.stringify({ 
+      error: error.message || "未知错误",
+      details: error.stack 
+    }), { 
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 }

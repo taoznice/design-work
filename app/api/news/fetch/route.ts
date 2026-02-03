@@ -109,52 +109,49 @@ function calculateWeightScore(news: NewsItem): number {
 
 export async function GET(request: NextRequest) {
   try {
-    const allNews: NewsItem[] = []
+    const feedPromises = RSS_FEEDS.map(async (feed) => {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 10000) // 10秒超时
 
-    // 循环抓取所有 RSS 源
-    for (const feed of RSS_FEEDS) {
       try {
-        // 使用自定义 fetch 获取 RSS，添加超时和重试机制
-        const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 10000) // 10秒超时
-        
-        try {
-          const response = await customFetch(feed.url, {
-            signal: controller.signal,
-          })
-          clearTimeout(timeoutId)
-          
-          if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-          }
-          
-          const text = await response.text()
-          const feedData = await parser.parseString(text)
-          
-          if (feedData.items) {
-            feedData.items.slice(0, 10).forEach((item) => {
-              if (item.title && item.link) {
-                allNews.push({
-                  title: item.title,
-                  link: item.link,
-                  pubDate: item.pubDate || undefined,
-                  source: feed.name,
-                })
-              }
-            })
-          }
-        } catch (fetchError: any) {
-          clearTimeout(timeoutId)
-          if (fetchError.name === 'AbortError') {
-            throw new Error('请求超时')
-          }
-          throw fetchError
+        const response = await customFetch(feed.url, {
+          signal: controller.signal,
+        })
+        clearTimeout(timeoutId)
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`)
         }
-      } catch (error) {
-        console.error(`获取 ${feed.name} 失败：`, error)
-        // 继续处理其他源，不中断整个流程
+
+        const text = await response.text()
+        const feedData = await parser.parseString(text)
+
+        if (!feedData.items) return []
+
+        return feedData.items.slice(0, 10).flatMap((item) => {
+          if (!item.title || !item.link) return []
+          return [{
+            title: item.title,
+            link: item.link,
+            pubDate: item.pubDate || undefined,
+            source: feed.name,
+          }]
+        })
+      } catch (error: any) {
+        clearTimeout(timeoutId)
+        if (error.name === 'AbortError') {
+          console.error(`获取 ${feed.name} 失败：请求超时`)
+        } else {
+          console.error(`获取 ${feed.name} 失败：`, error)
+        }
+        return []
       }
-    }
+    })
+
+    const results = await Promise.allSettled(feedPromises)
+    const allNews: NewsItem[] = results.flatMap((result) =>
+      result.status === 'fulfilled' ? result.value : []
+    )
 
     // 计算每条新闻的权重分数
     const newsWithWeight = allNews.map(news => ({
@@ -191,13 +188,15 @@ export async function GET(request: NextRequest) {
       },
     })
   } catch (error: any) {
-    console.error('News Fetch Error:', error)
-    return NextResponse.json(
-      {
-        error: '获取新闻失败',
-        details: error.message || '未知错误',
-      },
-      { status: 500 }
-    )
+    console.error("后端捕获到错误:", error);
+    
+    // 关键：把错误消息包装成 JSON 发给前端
+    return new Response(JSON.stringify({ 
+      error: error.message || "未知错误",
+      details: error.stack 
+    }), { 
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 }

@@ -202,36 +202,15 @@ export async function POST(request: NextRequest) {
       },
     })
   } catch (error: any) {
-    console.error('Image Analysis API Error:', error)
+    console.error("后端捕获到错误:", error);
     
-    // 处理不同的错误类型
-    let errorMessage = '图片分析失败'
-    let errorDetails = error.message || '未知错误'
-    
-    // 401 或连接失败，显示内部服务错误提示
-    if (error.status === 401 || 
-        error.message?.includes('401') || 
-        error.message?.includes('Unauthorized') ||
-        error.message?.includes('ECONNREFUSED') ||
-        error.message?.includes('Connect') ||
-        error.message?.includes('timeout') ||
-        error.message?.includes('Timeout')) {
-      errorMessage = '内部服务连接失败，请检查 VPN 或 Key'
-      errorDetails = '无法连接到内部 API 服务，请检查 VPN 连接和 API Key 配置'
-    } else if (error.message?.includes('429')) {
-      errorMessage = 'API 请求频率过高'
-      errorDetails = '请稍后再试，或检查你的 API 配额'
-    } else if (error.status === 500 || error.message?.includes('500')) {
-      errorMessage = '服务器错误'
-      errorDetails = 'API 服务暂时不可用，请稍后再试'
-    }
-    
-    return NextResponse.json(
-      { 
-        error: errorMessage,
-        details: errorDetails,
-      },
-      { status: 500 }
-    )
+    // 关键：把错误消息包装成 JSON 发给前端
+    return new Response(JSON.stringify({ 
+      error: error.message || "未知错误",
+      details: error.stack 
+    }), { 
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 }

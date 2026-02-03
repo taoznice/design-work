@@ -1,24 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server'
-import OpenAI from 'openai'
+import { NextRequest } from 'next/server'
+import { createOpenAIClient } from '@/lib/api-client'
+import { safeParseJSON, createErrorResponse, createSuccessResponse } from '@/lib/api-utils'
 
 const defaultPersona = `你是一个 Google Gemini 风格的高级设计助手。你的回答应该是流畅自然、富有洞察力的 Markdown 文本。除非用户明确要求，否则不要过度使用表格。保持段落清晰，重点突出，语气专业且乐于助人。
 
 在规划功能时，请使用列表（Bullet points）和关键步骤的形式，而不是复杂的结构化数据。`
-
-// 创建 OpenAI 客户端（使用阿里云通义千问）
-function createOpenAIClient() {
-  const apiKey = process.env.OPENAI_API_KEY
-  const baseUrl = 'https://dashscope.aliyuncs.com/compatible-mode/v1'
-  
-  if (!apiKey) {
-    throw new Error('OPENAI_API_KEY 未配置')
-  }
-  
-  return new OpenAI({
-    apiKey: apiKey,
-    baseURL: baseUrl,
-  })
-}
 
 interface KnowledgeCard {
   id: string
@@ -38,43 +24,28 @@ export const maxDuration = 60 // Vercel 超时配置
 
 export async function POST(request: NextRequest) {
   try {
-    let body: any
-    try {
-      body = await request.json()
-    } catch (parseError) {
-      console.error('Failed to parse request body:', parseError)
-      return NextResponse.json(
-        { 
-          error: '请求数据格式错误',
-          details: '无法解析请求体 JSON 数据'
-        },
-        { status: 400 }
-      )
+    // 解析请求体
+    const parseResult = await safeParseJSON(request)
+    if (parseResult.error) {
+      return createErrorResponse(parseResult.error.error, parseResult.error.details, 400)
     }
     
-    const { query, memoryContext, customPersona, imageAnalysis, useTeamWisdom, enableMemory } = body
+    const { query, memoryContext, customPersona, imageAnalysis, useTeamWisdom, enableMemory } = parseResult.data
 
     if (!query && !imageAnalysis) {
-      return NextResponse.json(
-        { 
-          error: 'query 或 imageAnalysis 至少需要一个',
-          details: '请提供文本查询或图片分析内容'
-        },
-        { status: 400 }
+      return createErrorResponse(
+        'query 或 imageAnalysis 至少需要一个',
+        '请提供文本查询或图片分析内容',
+        400
       )
     }
 
-    // 检查 API Key
-    const API_KEY = process.env.OPENAI_API_KEY
-    if (!API_KEY || API_KEY === 'YOUR_API_KEY_HERE') {
-      console.error('API Key is not set or is placeholder')
-      return NextResponse.json(
-        { 
-          error: 'API Key 未配置',
-          message: '请在项目根目录的 .env.local 文件中设置 OPENAI_API_KEY'
-        },
-        { status: 500 }
-      )
+    // 初始化 OpenAI 客户端（会自动检查 API Key）
+    let openai
+    try {
+      openai = createOpenAIClient()
+    } catch (error: any) {
+      return createErrorResponse('API Key 未配置', error.message, 500)
     }
 
     // 构建 System Message - 确保 System Prompt 优先级最高
@@ -107,7 +78,7 @@ export async function POST(request: NextRequest) {
       // 注意：这里需要从请求中获取知识库数据，因为这是服务端
       // 实际应该从前端传递知识库数据，或者从共享存储读取
       // 为了简化，我们假设前端会传递 knowledgeCards 数组
-      const knowledgeCards: KnowledgeCard[] = body.knowledgeCards || []
+      const knowledgeCards: KnowledgeCard[] = parseResult.data.knowledgeCards || []
       const enabledCards = knowledgeCards.filter(card => card.enabled)
       
       if (enabledCards.length > 0) {
@@ -126,7 +97,7 @@ export async function POST(request: NextRequest) {
     
     // 如果启用知识库且有图片类型的知识卡片，添加到 content 数组
     if (useTeamWisdom) {
-      const knowledgeCards: KnowledgeCard[] = body.knowledgeCards || []
+      const knowledgeCards: KnowledgeCard[] = parseResult.data.knowledgeCards || []
       const enabledImageCards = knowledgeCards.filter(
         card => card.enabled && card.contentType === 'image'
       )
@@ -175,9 +146,7 @@ export async function POST(request: NextRequest) {
 
     // 调用 API
     try {
-      const openai = createOpenAIClient()
-      
-      console.log('API Request:', {
+      console.log('[Generate] API Request:', {
         baseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
         model: 'qwen-vl-max',
       })
@@ -207,20 +176,14 @@ export async function POST(request: NextRequest) {
         throw new Error('API 返回的数据格式不正确')
       }
 
-      return NextResponse.json({
-        success: true,
-        data: {
-          response: aiResponse,
-        },
-      })
+      return createSuccessResponse({ response: aiResponse })
     } catch (apiError: any) {
-      console.error('API Error:', apiError)
+      console.error('[Generate] API Error:', apiError)
       
       // 处理不同的错误类型
       let errorMessage = 'API 调用失败'
       let errorDetails = apiError.message || '未知错误'
       
-      // 401 或连接失败，显示内部服务错误提示
       if (apiError.status === 401 || 
           apiError.message?.includes('401') || 
           apiError.message?.includes('Unauthorized') ||
@@ -238,20 +201,19 @@ export async function POST(request: NextRequest) {
         errorDetails = 'API 服务暂时不可用，请稍后再试'
       }
       
-      return NextResponse.json(
-        { 
-          error: errorMessage,
-          details: errorDetails,
-        },
-        { status: 500 }
-      )
+      return createErrorResponse(errorMessage, errorDetails, 500)
     }
   } catch (error: any) {
-    console.error('API Error:', error)
-    return NextResponse.json(
-      { error: '服务器内部错误', details: error.message },
-      { status: 500 }
-    )
+    console.error("后端捕获到错误:", error);
+    
+    // 关键：把错误消息包装成 JSON 发给前端
+    return new Response(JSON.stringify({ 
+      error: error.message || "未知错误",
+      details: error.stack 
+    }), { 
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 }
 

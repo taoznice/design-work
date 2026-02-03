@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+// @ts-ignore - pdf-parse 没有类型声明
 import pdfParse from 'pdf-parse'
 
 // Vercel 超时配置
@@ -58,25 +59,15 @@ export async function POST(request: NextRequest) {
       },
     })
   } catch (error: any) {
-    console.error('PDF Parse Error:', error)
+    console.error("后端捕获到错误:", error);
     
-    let errorMessage = 'PDF 解析失败'
-    let errorDetails = error.message || '未知错误'
-    
-    if (error.message?.includes('Invalid PDF')) {
-      errorMessage = 'PDF 文件格式无效'
-      errorDetails = '请确保上传的是有效的 PDF 文件'
-    } else if (error.message?.includes('password')) {
-      errorMessage = 'PDF 文件已加密'
-      errorDetails = '请先解除 PDF 文件的密码保护'
-    }
-    
-    return NextResponse.json(
-      { 
-        error: errorMessage,
-        details: errorDetails,
-      },
-      { status: 500 }
-    )
+    // 关键：把错误消息包装成 JSON 发给前端
+    return new Response(JSON.stringify({ 
+      error: error.message || "未知错误",
+      details: error.stack 
+    }), { 
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    });
   }
 }

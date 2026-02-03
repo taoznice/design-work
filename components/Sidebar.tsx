@@ -2,9 +2,14 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { Dna, FlaskConical, FileSearch, Palette, Radio, Languages } from 'lucide-react'
+import { Dna, FlaskConical, FileSearch, Palette, Radio, Languages, MessageSquare } from 'lucide-react'
 
 const workItems = [
+  {
+    icon: MessageSquare,
+    label: 'AI 聊天',
+    href: '/chat',
+  },
   {
     icon: Radio,
     label: 'AI Radar',

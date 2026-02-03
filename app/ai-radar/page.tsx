@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useMemo, useRef } from 'react'
 import { Sparkles, ExternalLink, TrendingUp, Newspaper, Lightbulb, Award, Code, Image, Video, Zap } from 'lucide-react'
 import { useAppStore } from '@/store/useAppStore'
 
@@ -60,6 +60,14 @@ const CACHE_KEY = 'radar_data_v3'
 const TIME_KEY = 'radar_time_v3'
 const CACHE_DURATION = 12 * 60 * 60 * 1000 // 12小时（毫秒）
 
+// 工具子榜单配置（静态，避免每次渲染创建）
+const toolSubTabs: { key: ToolSubTabType; label: string; icon: any }[] = [
+  { key: 'comprehensive', label: '综合', icon: Zap },
+  { key: 'coding', label: 'Coding', icon: Code },
+  { key: 'image_gen', label: '生图', icon: Image },
+  { key: 'video_gen', label: '视频', icon: Video },
+]
+
 export default function AIRadarPage() {
   // 全局状态管理
   const { radar, setRadarState } = useAppStore()
@@ -96,6 +104,160 @@ export default function AIRadarPage() {
   const abortControllerRef = useRef<AbortController | null>(null)
   const updateTimerRef = useRef<NodeJS.Timeout | null>(null)
   const lastUpdateTimeRef = useRef<number>(0)
+
+  // 渲染列表预计算，减少流式更新期间的重复渲染开销
+  const dailyNewsItems = useMemo(() => {
+    if (!radarData?.daily_ai_news?.length) return null
+    return radarData.daily_ai_news.map((news, index) => (
+      <div
+        key={index}
+        className="p-4 md:p-6 bg-gemini-surface border border-gemini-border rounded-2xl md:rounded-3xl hover:border-black transition-colors"
+      >
+        <div className="flex items-start gap-3 mb-4">
+          <span className="flex items-center justify-center w-6 h-6 rounded-full bg-black text-white text-xs font-semibold flex-shrink-0">
+            {index + 1}
+          </span>
+          <div className="flex-1">
+            <h3 className="text-base font-semibold text-gemini-text mb-2">
+              {news.title}
+            </h3>
+            {/* 支持新旧两种格式 */}
+            {news.insight ? (
+              <div className="space-y-2 mb-4">
+                <p className="text-sm text-gemini-text font-medium">
+                  {news.insight}
+                </p>
+                {news.tags && news.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {news.tags.map((tag, tagIdx) => (
+                      <span
+                        key={tagIdx}
+                        className="px-2 py-0.5 bg-gemini-surface text-xs text-gemini-text-secondary rounded-full"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="text-sm text-gemini-text-secondary mb-4">
+                {news.content}
+              </p>
+            )}
+            {news.url && (
+              <a
+                href={news.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 text-sm text-gemini-text-secondary hover:text-gemini-text transition-colors mb-4"
+              >
+                <ExternalLink size={14} />
+                查看原文
+              </a>
+            )}
+          </div>
+        </div>
+
+        {/* 对设计的影响和可发散利用空间（必需显示） */}
+        <div className="space-y-3 pl-9">
+          {news.design_impact && (
+            <div className="p-3 bg-gemini-bg rounded-2xl">
+              <div className="text-xs font-medium text-gemini-text-secondary mb-1">
+                对设计行业的影响
+              </div>
+              <p className="text-sm text-gemini-text">
+                {news.design_impact}
+              </p>
+            </div>
+          )}
+          {news.potential_usage && (
+            <div className="p-3 bg-gemini-bg rounded-2xl">
+              <div className="text-xs font-medium text-gemini-text-secondary mb-1">
+                可发散利用空间
+              </div>
+              <p className="text-sm text-gemini-text">
+                {news.potential_usage}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    ))
+  }, [radarData?.daily_ai_news])
+
+  const monthlyTrendsItems = useMemo(() => {
+    if (!radarData?.monthly_trends?.length) return null
+    return radarData.monthly_trends.map((trend, index) => (
+      <div key={index} className="bg-gemini-surface rounded-3xl p-6 md:p-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-4">
+            <span className="inline-block px-3 py-1.5 bg-black text-white text-xs font-medium rounded-full">
+              {trend.date_label}
+            </span>
+          </div>
+          <p className="text-base md:text-lg text-gemini-text leading-relaxed whitespace-pre-wrap font-light">
+            {trend.content}
+          </p>
+        </div>
+      </div>
+    ))
+  }, [radarData?.monthly_trends])
+
+  const weeklyInsightsItems = useMemo(() => {
+    if (!radarData?.weekly_insights?.length) return null
+    return radarData.weekly_insights.map((insight, index) => (
+      <div key={index} className="bg-gemini-surface rounded-3xl p-6 md:p-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-4">
+            <span className="inline-block px-3 py-1 bg-black text-white text-xs font-medium rounded-full">
+              {insight.date_label}
+            </span>
+          </div>
+          <p className="text-base md:text-lg text-gemini-text leading-relaxed whitespace-pre-wrap font-light">
+            {insight.content}
+          </p>
+        </div>
+      </div>
+    ))
+  }, [radarData?.weekly_insights])
+
+  const toolItems = useMemo(() => {
+    const tools = radarData?.ai_tools_rank?.[activeToolSubTab] || []
+    return tools.map((tool) => (
+      <div
+        key={tool.rank}
+        className="p-6 bg-gemini-surface border border-gemini-border rounded-3xl hover:border-black transition-colors"
+      >
+        <div className="flex items-start gap-4">
+          <div className={`
+            flex items-center justify-center w-10 h-10 rounded-full text-sm font-semibold flex-shrink-0
+            ${tool.rank <= 3 
+              ? 'bg-black text-white' 
+              : 'bg-gemini-surface border border-gemini-border text-gemini-text'
+            }
+          `}>
+            {tool.rank}
+          </div>
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-2">
+              <h3 className="text-base font-semibold text-gemini-text">
+                {tool.name}
+              </h3>
+              {tool.last_update && (
+                <span className="text-xs text-gemini-text-secondary">
+                  [{tool.last_update}]
+                </span>
+              )}
+            </div>
+            <p className="text-sm text-gemini-text-secondary">
+              {tool.reason}
+            </p>
+          </div>
+        </div>
+      </div>
+    ))
+  }, [radarData?.ai_tools_rank, activeToolSubTab])
 
   // --- 辅助函数：清洗 AI 返回的字符串 ---
   const cleanAndParseJSON = (text: string): any => {
@@ -507,7 +669,10 @@ export default function AIRadarPage() {
             try {
               const data = JSON.parse(line.slice(6))
               
-              if (data.type === 'chunk') {
+              if (data.type === 'started') {
+                // 后端已建立流，立即给用户视觉反馈，避免“假死”感
+                setStreamingText('...')
+              } else if (data.type === 'chunk') {
                 // 累积文本，使用防抖更新
                 accumulatedText += data.content
                 debouncedUpdate(accumulatedText)
@@ -611,14 +776,6 @@ export default function AIRadarPage() {
 
   // 分析新闻（保留旧版本作为后备）
   const analyzeNews = analyzeNewsStream
-
-  // 工具子榜单配置
-  const toolSubTabs: { key: ToolSubTabType; label: string; icon: any }[] = [
-    { key: 'comprehensive', label: '综合', icon: Zap },
-    { key: 'coding', label: 'Coding', icon: Code },
-    { key: 'image_gen', label: '生图', icon: Image },
-    { key: 'video_gen', label: '视频', icon: Video },
-  ]
 
   return (
     <div className="h-full bg-gemini-bg text-gemini-text">
@@ -758,82 +915,7 @@ export default function AIRadarPage() {
                 </div>
 
                 <div className="grid grid-cols-1 gap-4">
-                  {radarData.daily_ai_news?.map((news, index) => (
-                    <div
-                      key={index}
-                      className="p-4 md:p-6 bg-gemini-surface border border-gemini-border rounded-2xl md:rounded-3xl hover:border-black transition-colors"
-                    >
-                      <div className="flex items-start gap-3 mb-4">
-                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-black text-white text-xs font-semibold flex-shrink-0">
-                          {index + 1}
-                        </span>
-                        <div className="flex-1">
-                          <h3 className="text-base font-semibold text-gemini-text mb-2">
-                            {news.title}
-                          </h3>
-                          {/* 支持新旧两种格式 */}
-                          {news.insight ? (
-                            <div className="space-y-2 mb-4">
-                              <p className="text-sm text-gemini-text font-medium">
-                                {news.insight}
-                              </p>
-                              {news.tags && news.tags.length > 0 && (
-                                <div className="flex flex-wrap gap-1.5">
-                                  {news.tags.map((tag, tagIdx) => (
-                                    <span
-                                      key={tagIdx}
-                                      className="px-2 py-0.5 bg-gemini-surface text-xs text-gemini-text-secondary rounded-full"
-                                    >
-                                      {tag}
-                                    </span>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          ) : (
-                            <p className="text-sm text-gemini-text-secondary mb-4">
-                              {news.content}
-                            </p>
-                          )}
-                          {news.url && (
-                            <a
-                              href={news.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="inline-flex items-center gap-2 text-sm text-gemini-text-secondary hover:text-gemini-text transition-colors mb-4"
-                            >
-                              <ExternalLink size={14} />
-                              查看原文
-                            </a>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* 对设计的影响和可发散利用空间（必需显示） */}
-                      <div className="space-y-3 pl-9">
-                        {news.design_impact && (
-                          <div className="p-3 bg-gemini-bg rounded-2xl">
-                            <div className="text-xs font-medium text-gemini-text-secondary mb-1">
-                              对设计行业的影响
-                            </div>
-                            <p className="text-sm text-gemini-text">
-                              {news.design_impact}
-                            </p>
-                          </div>
-                        )}
-                        {news.potential_usage && (
-                          <div className="p-3 bg-gemini-bg rounded-2xl">
-                            <div className="text-xs font-medium text-gemini-text-secondary mb-1">
-                              可发散利用空间
-                            </div>
-                            <p className="text-sm text-gemini-text">
-                              {news.potential_usage}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                  {dailyNewsItems}
                 </div>
               </div>
             )}
@@ -851,20 +933,7 @@ export default function AIRadarPage() {
                 {/* 优先显示新的月度趋势格式，向后兼容旧格式 */}
                 {radarData.monthly_trends && Array.isArray(radarData.monthly_trends) && radarData.monthly_trends.length > 0 ? (
                   <div className="space-y-4">
-                    {radarData.monthly_trends.map((trend, index) => (
-                      <div key={index} className="bg-gemini-surface rounded-3xl p-6 md:p-8">
-                        <div className="max-w-4xl mx-auto">
-                          <div className="mb-4">
-                            <span className="inline-block px-3 py-1.5 bg-black text-white text-xs font-medium rounded-full">
-                              {trend.date_label}
-                            </span>
-                          </div>
-                          <p className="text-base md:text-lg text-gemini-text leading-relaxed whitespace-pre-wrap font-light">
-                            {trend.content}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
+                    {monthlyTrendsItems}
                   </div>
                 ) : radarData.weekly_insights && Array.isArray(radarData.weekly_insights) && radarData.weekly_insights.length > 0 ? (
                   // 向后兼容：显示旧的周度数据
@@ -874,20 +943,7 @@ export default function AIRadarPage() {
                         ⚠️ 这是旧格式的周度数据，请刷新获取最新的月度趋势
                       </p>
                     </div>
-                    {radarData.weekly_insights.map((insight, index) => (
-                      <div key={index} className="bg-gemini-surface rounded-3xl p-6 md:p-8">
-                        <div className="max-w-4xl mx-auto">
-                          <div className="mb-4">
-                            <span className="inline-block px-3 py-1 bg-black text-white text-xs font-medium rounded-full">
-                              {insight.date_label}
-                            </span>
-                          </div>
-                          <p className="text-base md:text-lg text-gemini-text leading-relaxed whitespace-pre-wrap font-light">
-                            {insight.content}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
+                    {weeklyInsightsItems}
                   </div>
                 ) : radarData.weekly_insight ? (
                   // 向后兼容：显示单个周度数据
@@ -954,39 +1010,7 @@ export default function AIRadarPage() {
 
                 {/* 工具列表 */}
                 <div className="space-y-3">
-                  {radarData.ai_tools_rank[activeToolSubTab]?.map((tool) => (
-                    <div
-                      key={tool.rank}
-                      className="p-6 bg-gemini-surface border border-gemini-border rounded-3xl hover:border-black transition-colors"
-                    >
-                      <div className="flex items-start gap-4">
-                        <div className={`
-                          flex items-center justify-center w-10 h-10 rounded-full text-sm font-semibold flex-shrink-0
-                          ${tool.rank <= 3 
-                            ? 'bg-black text-white' 
-                            : 'bg-gemini-surface border border-gemini-border text-gemini-text'
-                          }
-                        `}>
-                          {tool.rank}
-                        </div>
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <h3 className="text-base font-semibold text-gemini-text">
-                              {tool.name}
-                            </h3>
-                            {tool.last_update && (
-                              <span className="text-xs text-gemini-text-secondary">
-                                [{tool.last_update}]
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-sm text-gemini-text-secondary">
-                            {tool.reason}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                  {toolItems}
                 </div>
               </div>
             )}
