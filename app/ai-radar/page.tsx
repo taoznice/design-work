@@ -784,7 +784,7 @@ export default function AIRadarPage() {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
               <h1 className="text-xl md:text-2xl font-semibold text-gemini-text mb-2">
-                AI Radar (设计雷达)
+                AI 趋势
               </h1>
               <p className="text-xs md:text-sm text-gemini-text-secondary">
                 自动聚合科技新闻，AI 生成设计情报日报

@@ -6,7 +6,7 @@ import { Dna, FlaskConical, FileSearch, Palette, Radio, Languages, MessageSquare
 
 const workItems = [
   { icon: MessageSquare, label: 'AI 聊天', href: '/chat' },
-  { icon: Radio, label: 'AI Radar', href: '/ai-radar' },
+  { icon: Radio, label: 'AI 趋势', href: '/ai-radar' },
   { icon: FlaskConical, label: '课题讨论', href: '/strategy-lab' },
   { icon: FileSearch, label: '方案判断', href: '/proposal-review' },
   { icon: Palette, label: '审美合集', href: '/aesthetic-collection' },
