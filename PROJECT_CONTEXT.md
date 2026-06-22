@@ -86,6 +86,7 @@ GitHub 和 Vercel 已经走通过：
 - `828ed2e feat: redesign portfolio landing page`
 - `1af1b88 fix: use public npm registry for deployment`
 - `250f484 chore: add friendly runtime error page`
+- `9ae73af fix: force reload from runtime error page`
 
 Vercel 失败原因曾经是 `package-lock.json` 中部分依赖的 `resolved` 指向了内网/公司 npm 源 `r.npm.sankuai.com`，Vercel 无法解析，报 `ENOTFOUND r.npm.sankuai.com`。后来已改成 `https://registry.npmjs.org/...` 并重新部署成功。
 
@@ -115,6 +116,8 @@ npm run dev -- -H 127.0.0.1 -p 3000
 - 页面 DOM 能看到 `Project Showcase` 和作品集内容。
 
 用户看到的“页面加载失败，点击重新加载无效”大概率是浏览器仍保留旧客户端运行时状态。错误页按钮目前更偏向 React 错误边界 reset，不一定能清除旧 chunk 或浏览器缓存。后续可考虑把错误页按钮改成真正的 `window.location.reload()`，以便强制重新加载页面资源。
+
+2026-06-22 后续处理：已经把 `app/error.tsx` 的按钮改成“强制重新加载”，点击后会尝试清理浏览器 Cache Storage，并给当前 URL 增加 `reload={timestamp}` 参数后 `window.location.replace(...)`。该修复已提交并推送，线上构建标识从 `6uGsIu6DBWuKT7sR9zQGj` 更新为 `CXCHfG0OrVB61nqzevOHo`，错误页 chunk 更新为 `app/error-927d144ce7e57f1e.js`。浏览器级验证 `https://www.design-workbench.top/` 正常，无 `Application error`，控制台无 error/warn。
 
 ## 文件体积说明
 
@@ -151,7 +154,6 @@ git check-ignore node_modules .next
 
 ## 可能的下一步
 
-- 把 `app/error.tsx` 的“重新加载”按钮改成强制刷新页面。
 - 为项目根目录补一个简洁 README，说明如何本地运行、替换内容、部署。
 - 将 `content/portfolio.ts` 进一步拆分为 `copy`、`projects`、`media`，如果后续内容规模变大。
 - 为作品详情页建立 `app/work/[slug]/page.tsx` 和 `public/assets/projects/{slug}/` 结构。
