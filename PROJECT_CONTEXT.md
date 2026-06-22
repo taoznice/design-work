@@ -4,7 +4,7 @@
 
 ## 当前项目身份
 
-- 项目名：`design-strategy-os`
+- 项目名：`design-work`
 - 当前实际路径：`/Users/zhudi/Desktop/design-work`
 - GitHub 仓库：`https://github.com/taoznice/design-work`
 - 生产域名：`https://www.design-workbench.top/`
@@ -15,7 +15,7 @@
 
 ## 本轮对话目标
 
-用户希望把原来的 `design-strategy-os` 改造成一个可线上展示的个人/设计作品集 landing page，并且希望项目文件夹结构更清楚，后续可以替换素材、上传 GitHub、自动部署到线上域名。
+用户希望把原来的 `design-strategy-os` 改造成一个可线上展示的个人/设计作品集 landing page，并且希望项目文件夹结构更清楚，后续可以替换素材、上传 GitHub、自动部署到线上域名。项目清理后，包名已收敛为 `design-work`。
 
 整个过程中用户的关键诉求包括：
 
@@ -88,6 +88,7 @@ GitHub 和 Vercel 已经走通过：
 - `250f484 chore: add friendly runtime error page`
 - `9ae73af fix: force reload from runtime error page`
 - `c560d26 feat: enlarge selected works showcase`
+- 待本次提交：清除旧设计工作台页面、API、记忆系统、旧文档和冗余依赖，项目收敛为作品集站点。
 
 Vercel 失败原因曾经是 `package-lock.json` 中部分依赖的 `resolved` 指向了内网/公司 npm 源 `r.npm.sankuai.com`，Vercel 无法解析，报 `ENOTFOUND r.npm.sankuai.com`。后来已改成 `https://registry.npmjs.org/...` 并重新部署成功。
 
@@ -141,11 +142,29 @@ git status --short
 git check-ignore node_modules .next
 ```
 
+## 清理记录
+
+2026-06-22 清理旧内容：用户确认清除原来的设计工作台内容。已删除旧页面 `aesthetic-collection`、`ai-radar`、`chat`、`knowledge`、`memory`、`proposal-review`、`strategy-lab`、`translation`；删除旧 API 路由 `app/api/*`；删除旧组件、Hook、Store、Lib、API 配置文档、代理文档、旧 Cursor 规则、自动 push 脚本和空文件。已卸载不再使用的 AI/API/上传/PDF/RSS/Zustand 等依赖，保留作品集首页实际需要的 `framer-motion`、`gsap`、`hls.js`、`lucide-react`、`next`、`react`、`react-dom`。
+
+当前源码结构应保持轻量：
+
+```txt
+app/
+├── error.tsx
+├── globals.css
+├── layout.tsx
+└── page.tsx
+content/
+└── portfolio.ts
+docs/
+└── portfolio-content-guide.md
+public/assets/portfolio/
+```
+
 ## 项目内已有文档
 
 - `PROJECT_CONTEXT.md`：当前项目总上下文，后续接手优先阅读。
 - `docs/portfolio-content-guide.md`：作品集内容和素材替换指南。
-- `docs/memory-integration.md`：原项目里的全局记忆功能集成说明，目前与作品集首页关系不大，但仍保留。
 
 ## 后续 Agent 接手注意事项
 
