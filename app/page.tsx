@@ -340,8 +340,8 @@ function SelectedWorks({ language }: { language: Language }) {
   const workCopy = copy[language].work
 
   return (
-    <section id="work" className="bg-bg py-12 md:py-16">
-      <div className="mx-auto max-w-[1200px] px-6 md:px-10 lg:px-16">
+    <section id="work" className="bg-bg py-16 md:py-24">
+      <div className="mx-auto max-w-[1600px] px-4 sm:px-6 md:px-10 lg:px-14">
         <SectionHeader
           eyebrow={workCopy.eyebrow}
           title={workCopy.title}
@@ -350,26 +350,44 @@ function SelectedWorks({ language }: { language: Language }) {
           cta={workCopy.cta}
         />
 
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-12 md:gap-6">
-          {workItems.map((item) => (
-            <article
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-12 lg:gap-8">
+          {workItems.map((item, index) => (
+            <motion.article
               key={item.title.en}
               className={`${item.span} ${item.aspect} group relative overflow-hidden rounded-3xl border border-stroke bg-surface`}
+              initial={{ opacity: 0, y: 36 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
+              viewport={{ once: true, margin: '-120px' }}
             >
               <img
                 src={item.image}
                 alt=""
-                className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105"
               />
               <div className="halftone pointer-events-none absolute inset-0" />
-              <div className="absolute inset-0 flex items-center justify-center bg-bg/70 opacity-0 backdrop-blur-lg transition-opacity duration-300 group-hover:opacity-100">
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-bg/90 via-bg/15 to-transparent opacity-90" />
+              <div className="absolute inset-x-0 bottom-0 z-10 flex items-end justify-between gap-6 p-6 sm:p-8 lg:p-10">
+                <div className="min-w-0">
+                  <div className="mb-3 text-xs uppercase tracking-[0.24em] text-white/55">
+                    {String(index + 1).padStart(2, '0')}
+                  </div>
+                  <h3 className="max-w-[760px] font-display text-4xl italic leading-none text-white sm:text-5xl lg:text-7xl">
+                    {item.title[language]}
+                  </h3>
+                </div>
+                <span className="hidden shrink-0 rounded-full border border-white/20 bg-white/10 px-5 py-2 text-sm text-white backdrop-blur-md transition-colors group-hover:bg-white group-hover:text-bg md:inline-flex">
+                  {workCopy.hoverPrefix}
+                </span>
+              </div>
+              <div className="absolute inset-0 flex items-center justify-center bg-bg/65 opacity-0 backdrop-blur-md transition-opacity duration-300 group-hover:opacity-100">
                 <span className="gradient-ring rounded-full">
-                  <span className="rounded-full bg-white px-5 py-2 text-sm text-bg">
+                  <span className="rounded-full bg-white px-6 py-3 text-sm text-bg">
                     {workCopy.hoverPrefix} <span className="font-display italic">{item.title[language]}</span>
                   </span>
                 </span>
               </div>
-            </article>
+            </motion.article>
           ))}
         </div>
       </div>

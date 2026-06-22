@@ -87,6 +87,7 @@ GitHub 和 Vercel 已经走通过：
 - `1af1b88 fix: use public npm registry for deployment`
 - `250f484 chore: add friendly runtime error page`
 - `9ae73af fix: force reload from runtime error page`
+- 待本次提交：放大精选项目模块，修复 Tailwind 未扫描 `content/portfolio.ts` 导致动态尺寸类未生成的问题。
 
 Vercel 失败原因曾经是 `package-lock.json` 中部分依赖的 `resolved` 指向了内网/公司 npm 源 `r.npm.sankuai.com`，Vercel 无法解析，报 `ENOTFOUND r.npm.sankuai.com`。后来已改成 `https://registry.npmjs.org/...` 并重新部署成功。
 
@@ -118,6 +119,8 @@ npm run dev -- -H 127.0.0.1 -p 3000
 用户看到的“页面加载失败，点击重新加载无效”大概率是浏览器仍保留旧客户端运行时状态。错误页按钮目前更偏向 React 错误边界 reset，不一定能清除旧 chunk 或浏览器缓存。后续可考虑把错误页按钮改成真正的 `window.location.reload()`，以便强制重新加载页面资源。
 
 2026-06-22 后续处理：已经把 `app/error.tsx` 的按钮改成“强制重新加载”，点击后会尝试清理浏览器 Cache Storage，并给当前 URL 增加 `reload={timestamp}` 参数后 `window.location.replace(...)`。该修复已提交并推送，线上构建标识从 `6uGsIu6DBWuKT7sR9zQGj` 更新为 `CXCHfG0OrVB61nqzevOHo`，错误页 chunk 更新为 `app/error-927d144ce7e57f1e.js`。浏览器级验证 `https://www.design-workbench.top/` 正常，无 `Application error`，控制台无 error/warn。
+
+2026-06-22 视觉调整：用户反馈“精选项目模块呈现不佳，过小”。已将精选项目模块从小图网格调整为更大的作品展示版式：容器从 `max-w-[1200px]` 放大到 `max-w-[1600px]`，第一/第四个项目在桌面端横向占满 12 栏，中间两个项目各占 6 栏；项目标题改为常驻显示在图片底部，并保留 hover 查看状态。排查时发现 `tailwind.config.js` 未扫描 `content/portfolio.ts`，导致放在内容配置里的动态布局类无法生成 CSS，这是项目卡片显得异常小的重要原因。已补充 `./content/**/*.{js,ts,jsx,tsx,mdx}` 到 Tailwind content 扫描路径。验证结果：`npm run build` 通过；本地桌面视口 947px 下卡片约为 852x539、414x470、414x470、852x539；移动端 390px 下卡片约为 343x420、343x500、343x500、343x420，无横向溢出，控制台无 error/warn。
 
 ## 文件体积说明
 
