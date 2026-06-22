@@ -132,28 +132,28 @@ export const workItems = [
   {
     title: { en: 'Automotive Motion System', zh: '车载动效系统' },
     span: 'md:col-span-12',
-    aspect: 'h-[420px] md:h-auto md:aspect-[1.58/1] lg:min-h-[620px]',
+    aspect: 'h-[340px] sm:h-[380px] md:h-[430px] lg:h-[520px]',
     image:
       'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1400&q=80',
   },
   {
     title: { en: 'Urban Interface Space', zh: '城市空间界面' },
     span: 'md:col-span-6',
-    aspect: 'h-[500px] md:h-auto md:aspect-[0.88/1] lg:min-h-[680px]',
+    aspect: 'h-[360px] sm:h-[400px] md:h-[380px] lg:h-[500px]',
     image:
       'https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=1100&q=80',
   },
   {
     title: { en: 'User Perspective Research', zh: '用户视角研究' },
     span: 'md:col-span-6',
-    aspect: 'h-[500px] md:h-auto md:aspect-[0.88/1] lg:min-h-[680px]',
+    aspect: 'h-[360px] sm:h-[400px] md:h-[380px] lg:h-[500px]',
     image:
       'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1100&q=80',
   },
   {
     title: { en: 'Brand Experience Identity', zh: '品牌体验识别' },
     span: 'md:col-span-12',
-    aspect: 'h-[420px] md:h-auto md:aspect-[1.58/1] lg:min-h-[620px]',
+    aspect: 'h-[340px] sm:h-[380px] md:h-[430px] lg:h-[520px]',
     image:
       'https://images.unsplash.com/photo-1600508774634-4e11d34730e2?auto=format&fit=crop&w=1400&q=80',
   },
