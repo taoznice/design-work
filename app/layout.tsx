@@ -1,10 +1,14 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import './globals.css'
-import Sidebar from '@/components/Sidebar'
 
 export const metadata: Metadata = {
-  title: '工作台',
-  description: '设计管理工作台',
+  title: 'Project Showcase',
+  description: 'A personal portfolio for experience design, AI tools, and digital product practice.',
+}
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
 }
 
 export default function RootLayout({
@@ -13,15 +17,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="zh-CN">
-      <body>
-        <div className="flex flex-col sm:flex-row h-screen bg-gemini-bg">
-          <Sidebar />
-          <main className="flex-1 overflow-auto bg-gemini-bg pb-20 sm:pb-0">
-            {children}
-          </main>
-        </div>
-      </body>
+    <html lang="en" style={{ '--font-body': "'Inter', sans-serif", '--font-display': "'Instrument Serif', serif" } as React.CSSProperties}>
+      <body>{children}</body>
     </html>
   )
 }

@@ -1,47 +1,35 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Instrument+Serif:ital@1&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
-
 :root {
-  /* Strict Monochrome & Soft UI */
-  --background: #FFFFFF;
-  --foreground: #000000;
-  --surface: #F9F9F9;
-  --surface-hover: #FFFFFF;
-  --primary: #000000;
-  --primary-hover: #171717;
-  --text-primary: #000000;
-  --text-secondary: #666666;
-  --border: #E5E5E5;
-  --active-bg: #FFFFFF;
-  --active-text: #000000;
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --bg: 0 0% 4%;
+  --surface: 0 0% 8%;
+  --text: 0 0% 96%;
+  --muted: 0 0% 53%;
+  --stroke: 0 0% 12%;
+  --accent: 0 0% 96%;
 }
 
 * {
   box-sizing: border-box;
 }
 
+html {
+  background: hsl(var(--bg));
+  overflow-x: hidden;
+  scroll-behavior: smooth;
+}
+
 body {
-  color: var(--text-primary);
-  background: var(--background);
-  font-family: 'Inter', 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: hsl(var(--text));
+  background: hsl(var(--bg));
+  font-family: var(--font-body);
+  overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-/* 代码块样式 */
-code, pre {
-  font-family: 'Fira Code', 'JetBrains Mono', monospace;
-}
-
-pre {
-  background: var(--surface);
-  border-radius: 12px;
-  padding: 1rem;
-  border: 1px solid var(--border);
 }
 
 @layer utilities {
@@ -49,81 +37,129 @@ pre {
     text-wrap: balance;
   }
 
-  /* Gemini 风格 Focus 投影 */
-  .shadow-gemini-focus {
-    box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.1), 0 2px 12px 0 rgba(0, 0, 0, 0.05);
+  .accent-gradient {
+    background: linear-gradient(90deg, #89AACC 0%, #4E85BF 100%);
   }
 }
 
-/* 输入框 Focus 样式 */
 input:focus,
 textarea:focus,
 select:focus {
   outline: none !important;
-  ring: 0 !important;
-  box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.1), 0 2px 12px 0 rgba(0, 0, 0, 0.05) !important;
-  background-color: #FFFFFF !important;
+  box-shadow: none !important;
 }
 
-/* 呼吸灯动画 - 更优雅的脉冲效果 */
-@keyframes breathe {
-  0%, 100% {
-    opacity: 0.4;
-    transform: scale(1);
+.gradient-ring {
+  --ring-opacity: 0;
+  position: relative;
+  display: inline-flex;
+  isolation: isolate;
+  transition: transform 220ms ease;
+}
+
+.gradient-ring:hover {
+  --ring-opacity: 1;
+  transform: scale(1.05);
+}
+
+.gradient-ring::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #89AACC 0%, #4E85BF 100%);
+  opacity: var(--ring-opacity);
+  transition: opacity 220ms ease;
+  z-index: -1;
+}
+
+.halftone {
+  background-image: radial-gradient(circle, #000 1px, transparent 1px);
+  background-size: 4px 4px;
+  mix-blend-mode: multiply;
+  opacity: 0.2;
+}
+
+@keyframes scroll-down {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(200%);
+  }
+}
+
+@keyframes role-fade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
   }
   50% {
-    opacity: 1;
-    transform: scale(1.1);
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
   }
 }
 
-/* 打字机光标闪烁 */
-@keyframes blink {
-  0%, 49% {
-    opacity: 1;
-  }
-  50%, 100% {
-    opacity: 0;
-  }
+.animate-scroll-down {
+  animation: scroll-down 1.5s ease-in-out infinite;
 }
 
-.animate-breathe {
-  animation: breathe 2s ease-in-out infinite;
+.animate-role-fade-in {
+  animation: role-fade-in 0.4s ease-out;
 }
 
-.animate-blink {
-  animation: blink 1s step-end infinite;
+.animate-gradient-shift {
+  animation: gradient-shift 6s ease infinite;
+  background-size: 200% 200%;
 }
 
-/* Toast 动画 */
-@keyframes slide-in-from-bottom {
-  from {
-    transform: translateY(100%);
-    opacity: 0;
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
   }
-  to {
-    transform: translateY(0);
-    opacity: 1;
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
   }
 }
 
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+.liquid-glass {
+  background: rgba(255, 255, 255, 0.01);
+  background-blend-mode: luminosity;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: none;
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  position: relative;
+  overflow: hidden;
 }
 
-.animate-in {
-  animation-fill-mode: both;
-}
-
-.slide-in-from-bottom-5 {
-  animation: slide-in-from-bottom 0.3s ease-out;
-}
-
-.fade-in {
-  animation: fade-in 0.3s ease-out;
+.liquid-glass::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.4px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.15) 20%, rgba(255,255,255,0) 40%, rgba(255,255,255,0) 60%, rgba(255,255,255,0.15) 80%, rgba(255,255,255,0.45) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
 }
