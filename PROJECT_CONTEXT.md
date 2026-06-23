@@ -89,7 +89,8 @@ GitHub 和 Vercel 已经走通过：
 - `9ae73af fix: force reload from runtime error page`
 - `c560d26 feat: enlarge selected works showcase`
 - `643c34b chore: remove legacy workbench features`
-- 待本次提交：增加细腻的作品集创意动效，包括项目图轻视差、项目辅助线/编号动画、中英文切换 blur/fade 过渡。
+- `9571346 feat: add subtle portfolio motion`
+- 待本次提交：按用户要求保留 EN/中切换，其余创意动效回到 `643c34b` 版本的页面表现。
 
 Vercel 失败原因曾经是 `package-lock.json` 中部分依赖的 `resolved` 指向了内网/公司 npm 源 `r.npm.sankuai.com`，Vercel 无法解析，报 `ENOTFOUND r.npm.sankuai.com`。后来已改成 `https://registry.npmjs.org/...` 并重新部署成功。
 
@@ -164,13 +165,9 @@ public/assets/portfolio/
 
 ## 动效与交互记录
 
-2026-06-23 创意表达优化：用户希望网站更能体现设计师的创意表达，同时不破坏现有暗色作品集风格。已在 `app/page.tsx` 增加三组细腻动效：
+2026-06-23 创意表达优化回退：用户希望“保留中英文切换，其他回到上一版本”。已在 `app/page.tsx` 移除 `9571346` 中新增的精选项目图片轻视差、项目辅助线/编号动画，以及中英文切换时的 `blur + fade` 包裹。页面保留原有 EN/中切换、首屏动效、加载动效、项目 hover 效果和中等尺寸精选项目布局。
 
-- 精选项目图片轻视差：使用 Framer Motion `useScroll` / `useTransform` 让项目图片在卡片内随滚动产生约 10% 的细微纵向位移，并让图片高度略大于卡片，避免露底。
-- 精选项目辅助线/编号动画：项目卡片进入视口时显示轻量角线和编号入场，模拟设计稿对齐线、展览标签或版式校准线。
-- 中英文切换过渡：语言按钮切换时，主体内容做短促 `blur + fade + 轻微位移`，让文案替换像一次重新排版，而不是硬切。
-
-验证结果：`npm run build` 通过；本地桌面和移动端检查无横向溢出；中英文切换后 `document.title` 和 `html lang` 正常更新；浏览器控制台无 error/warn。
+验证结果：`npm run build` 通过；本地浏览器验证英文默认标题为 `Project Showcase`，点击 `中` 后切换为 `项目展示` 且 `html lang` 更新为 `zh-CN`；精选项目图不再带视差样式或辅助线；页面无横向溢出，控制台无 error/warn。
 
 ## 项目内已有文档
 
