@@ -90,7 +90,7 @@ GitHub 和 Vercel 已经走通过：
 - `c560d26 feat: enlarge selected works showcase`
 - `643c34b chore: remove legacy workbench features`
 - `9571346 feat: add subtle portfolio motion`
-- 待本次提交：按用户要求保留 EN/中切换，其余创意动效回到 `643c34b` 版本的页面表现。
+- `d2f034f fix: revert extra portfolio motion`
 
 Vercel 失败原因曾经是 `package-lock.json` 中部分依赖的 `resolved` 指向了内网/公司 npm 源 `r.npm.sankuai.com`，Vercel 无法解析，报 `ENOTFOUND r.npm.sankuai.com`。后来已改成 `https://registry.npmjs.org/...` 并重新部署成功。
 
@@ -167,7 +167,7 @@ public/assets/portfolio/
 
 2026-06-23 创意表达优化回退：用户希望“保留中英文切换，其他回到上一版本”。已在 `app/page.tsx` 移除 `9571346` 中新增的精选项目图片轻视差、项目辅助线/编号动画，以及中英文切换时的 `blur + fade` 包裹。页面保留原有 EN/中切换、首屏动效、加载动效、项目 hover 效果和中等尺寸精选项目布局。
 
-验证结果：`npm run build` 通过；本地浏览器验证英文默认标题为 `Project Showcase`，点击 `中` 后切换为 `项目展示` 且 `html lang` 更新为 `zh-CN`；精选项目图不再带视差样式或辅助线；页面无横向溢出，控制台无 error/warn。
+验证结果：`npm run build` 通过；本地与线上浏览器验证英文默认标题为 `Project Showcase`，点击 `中` 后切换为 `项目展示` 且 `html lang` 更新为 `zh-CN`；精选项目图不再带视差样式或辅助线；页面无横向溢出，控制台无 error/warn。线上已切到构建 `QjBAAZVz0y6iByhJZblwW`。
 
 ## 项目内已有文档
 
