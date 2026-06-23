@@ -1,6 +1,6 @@
 'use client'
 
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion, useScroll, useTransform } from 'framer-motion'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import Hls from 'hls.js'
@@ -352,46 +352,122 @@ function SelectedWorks({ language }: { language: Language }) {
 
         <div className="grid grid-cols-1 gap-5 md:grid-cols-12 lg:gap-6">
           {workItems.map((item, index) => (
-            <motion.article
+            <WorkCard
               key={item.title.en}
-              className={`${item.span} ${item.aspect} group relative overflow-hidden rounded-3xl border border-stroke bg-surface`}
-              initial={{ opacity: 0, y: 36 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
-              viewport={{ once: true, margin: '-120px' }}
-            >
-              <img
-                src={item.image}
-                alt=""
-                className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105"
-              />
-              <div className="halftone pointer-events-none absolute inset-0" />
-              <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-bg/90 via-bg/15 to-transparent opacity-90" />
-              <div className="absolute inset-x-0 bottom-0 z-10 flex items-end justify-between gap-6 p-6 sm:p-7 lg:p-8">
-                <div className="min-w-0">
-                  <div className="mb-3 text-xs uppercase tracking-[0.24em] text-white/55">
-                    {String(index + 1).padStart(2, '0')}
-                  </div>
-                  <h3 className="max-w-[720px] font-display text-4xl italic leading-none text-white sm:text-5xl lg:text-6xl">
-                    {item.title[language]}
-                  </h3>
-                </div>
-                <span className="hidden shrink-0 rounded-full border border-white/20 bg-white/10 px-5 py-2 text-sm text-white backdrop-blur-md transition-colors group-hover:bg-white group-hover:text-bg md:inline-flex">
-                  {workCopy.hoverPrefix}
-                </span>
-              </div>
-              <div className="absolute inset-0 flex items-center justify-center bg-bg/65 opacity-0 backdrop-blur-md transition-opacity duration-300 group-hover:opacity-100">
-                <span className="gradient-ring rounded-full">
-                  <span className="rounded-full bg-white px-6 py-3 text-sm text-bg">
-                    {workCopy.hoverPrefix} <span className="font-display italic">{item.title[language]}</span>
-                  </span>
-                </span>
-              </div>
-            </motion.article>
+              item={item}
+              index={index}
+              language={language}
+              hoverPrefix={workCopy.hoverPrefix}
+            />
           ))}
         </div>
       </div>
     </section>
+  )
+}
+
+function WorkCard({
+  item,
+  index,
+  language,
+  hoverPrefix,
+}: {
+  item: (typeof workItems)[number]
+  index: number
+  language: Language
+  hoverPrefix: string
+}) {
+  const cardRef = useRef<HTMLElement | null>(null)
+  const { scrollYProgress } = useScroll({
+    target: cardRef,
+    offset: ['start end', 'end start'],
+  })
+  const imageY = useTransform(scrollYProgress, [0, 1], ['-5%', '5%'])
+
+  return (
+    <motion.article
+      ref={cardRef}
+      className={`${item.span} ${item.aspect} group relative overflow-hidden rounded-3xl border border-stroke bg-surface`}
+      initial={{ opacity: 0, y: 36 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
+      viewport={{ once: true, margin: '-120px' }}
+    >
+      <motion.img
+        src={item.image}
+        alt=""
+        className="h-[112%] w-full object-cover"
+        style={{ y: imageY }}
+        whileHover={{ scale: 1.035 }}
+        transition={{ duration: 0.9, ease: [0.25, 0.1, 0.25, 1] }}
+      />
+      <div className="halftone pointer-events-none absolute inset-0" />
+      <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-bg/90 via-bg/15 to-transparent opacity-90" />
+
+      <motion.div
+        className="pointer-events-none absolute inset-4 z-10 hidden md:block"
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        transition={{ duration: 0.8, delay: 0.16, ease: [0.25, 0.1, 0.25, 1] }}
+        viewport={{ once: true, margin: '-120px' }}
+      >
+        <motion.span
+          className="absolute left-0 top-0 h-px w-20 origin-left bg-white/35"
+          initial={{ scaleX: 0 }}
+          whileInView={{ scaleX: 1 }}
+          transition={{ duration: 0.7, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+          viewport={{ once: true }}
+        />
+        <motion.span
+          className="absolute left-0 top-0 h-20 w-px origin-top bg-white/35"
+          initial={{ scaleY: 0 }}
+          whileInView={{ scaleY: 1 }}
+          transition={{ duration: 0.7, delay: 0.26, ease: [0.25, 0.1, 0.25, 1] }}
+          viewport={{ once: true }}
+        />
+        <motion.span
+          className="absolute bottom-0 right-0 h-px w-20 origin-right bg-white/25"
+          initial={{ scaleX: 0 }}
+          whileInView={{ scaleX: 1 }}
+          transition={{ duration: 0.7, delay: 0.32, ease: [0.25, 0.1, 0.25, 1] }}
+          viewport={{ once: true }}
+        />
+        <motion.span
+          className="absolute bottom-0 right-0 h-20 w-px origin-bottom bg-white/25"
+          initial={{ scaleY: 0 }}
+          whileInView={{ scaleY: 1 }}
+          transition={{ duration: 0.7, delay: 0.38, ease: [0.25, 0.1, 0.25, 1] }}
+          viewport={{ once: true }}
+        />
+      </motion.div>
+
+      <div className="absolute inset-x-0 bottom-0 z-20 flex items-end justify-between gap-6 p-6 sm:p-7 lg:p-8">
+        <div className="min-w-0">
+          <motion.div
+            className="mb-3 text-xs uppercase tracking-[0.24em] text-white/55"
+            initial={{ opacity: 0, y: 8 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.55, delay: 0.16, ease: [0.25, 0.1, 0.25, 1] }}
+            viewport={{ once: true }}
+          >
+            {String(index + 1).padStart(2, '0')}
+          </motion.div>
+          <h3 className="max-w-[720px] font-display text-4xl italic leading-none text-white sm:text-5xl lg:text-6xl">
+            {item.title[language]}
+          </h3>
+        </div>
+        <span className="hidden shrink-0 rounded-full border border-white/20 bg-white/10 px-5 py-2 text-sm text-white backdrop-blur-md transition-colors group-hover:bg-white group-hover:text-bg md:inline-flex">
+          {hoverPrefix}
+        </span>
+      </div>
+      <div className="absolute inset-0 flex items-center justify-center bg-bg/65 opacity-0 backdrop-blur-md transition-opacity duration-300 group-hover:opacity-100">
+        <span className="gradient-ring rounded-full">
+          <span className="rounded-full bg-white px-6 py-3 text-sm text-bg">
+            {hoverPrefix} <span className="font-display italic">{item.title[language]}</span>
+          </span>
+        </span>
+      </div>
+    </motion.article>
   )
 }
 
@@ -630,22 +706,39 @@ function ContactFooter({ language }: { language: Language }) {
 export default function Home() {
   const [isLoading, setIsLoading] = useState(true)
   const [language, setLanguage] = useState<Language>('en')
+  const [isLanguageTransitioning, setIsLanguageTransitioning] = useState(false)
 
   useEffect(() => {
     document.documentElement.lang = language === 'en' ? 'en' : 'zh-CN'
     document.title = language === 'en' ? 'Project Showcase' : '项目展示'
   }, [language])
 
+  const handleLanguageChange = (nextLanguage: Language) => {
+    if (nextLanguage === language) return
+
+    setIsLanguageTransitioning(true)
+    window.setTimeout(() => {
+      setLanguage(nextLanguage)
+      window.setTimeout(() => setIsLanguageTransitioning(false), 170)
+    }, 120)
+  }
+
   return (
     <main className="min-h-screen overflow-hidden bg-bg text-text-primary">
       <AnimatePresence>{isLoading && <LoadingScreen language={language} onComplete={() => setIsLoading(false)} />}</AnimatePresence>
-      <Navbar language={language} onLanguageChange={setLanguage} />
-      <HeroSection language={language} />
-      <SelectedWorks language={language} />
-      <Journal language={language} />
-      <Explorations language={language} />
-      <Stats language={language} />
-      <ContactFooter language={language} />
+      <Navbar language={language} onLanguageChange={handleLanguageChange} />
+      <div
+        className={`transition-[filter,opacity,transform] duration-200 ease-out ${
+          isLanguageTransitioning ? 'translate-y-0.5 opacity-80 blur-[3px]' : 'translate-y-0 opacity-100 blur-0'
+        }`}
+      >
+        <HeroSection language={language} />
+        <SelectedWorks language={language} />
+        <Journal language={language} />
+        <Explorations language={language} />
+        <Stats language={language} />
+        <ContactFooter language={language} />
+      </div>
     </main>
   )
 }
