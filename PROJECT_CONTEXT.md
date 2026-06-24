@@ -1,17 +1,32 @@
 # Project Context
 
-最后更新：2026-06-23
+最后更新：2026-06-24
 
 ## 当前项目身份
 
 - 项目名：`design-work`
 - 当前实际路径：`/Users/zhudi/Desktop/design-work`
+- 项目类型：设计师个人作品集单页站点
 - GitHub 仓库：`https://github.com/taoznice/design-work`
 - 生产域名：`https://www.design-workbench.top/`
 - Vercel 默认域名：`https://design-work-green.vercel.app/`
 - 本地预览：`http://127.0.0.1:3000/`
+- 默认语言：英文
+- 语言切换：导航中的 `EN / 中`
 
 重要约定：后续读取、修改、部署都以桌面路径 `/Users/zhudi/Desktop/design-work` 为准。旧路径 `/Users/zhudi/Documents/XiangMu-codex` 是另一个工作区上下文，不再作为这个作品集项目的主路径。
+
+## 上下文文件与接手入口
+
+当前项目已经补齐项目级上下文入口：
+
+- `PROJECT_CONTEXT.md`：项目事实源，记录身份、路径、部署、结构、排障和历史决策。
+- `AGENTS.md`：给 Codex 或其他 Agent 的执行说明，要求先读 `PROJECT_CONTEXT.md` 并检查工作区状态。
+- `CLAUDE.md`：给 Claude Code 的交接入口，确保 Claude 与 Codex 使用同一套项目事实。
+- `README.md`：给人类维护者的运行、修改、素材、部署说明。
+- `docs/portfolio-content-guide.md`：作品集内容和素材替换指南。
+
+后续如果改变线上域名、仓库、主要文件结构、部署方式、素材组织、重要设计决策或排障结论，需要同步更新 `PROJECT_CONTEXT.md`。如果只是普通文案或图片替换，一般只需要改 `content/portfolio.ts`。
 
 ## 本轮对话目标
 
@@ -49,6 +64,12 @@
 - 包含导航、首屏、精选项目、札记、视觉实验、统计数据、联系区等模块。
 - 使用视频/HLS 背景和作品集视觉素材。
 - 增加了友好的中文运行时错误页，提示用户刷新或重新加载。
+
+当前设计状态：
+
+- 保留中英文切换，默认英文。
+- 精选项目保持中等尺寸布局。
+- 用户已要求回退额外新增的项目图滚动视差、辅助线/编号入场动画、中英文切换 blur/fade 包裹；不要在未确认的情况下重新加入这些效果。
 
 ## 素材和内容替换方式
 
@@ -151,6 +172,10 @@ git check-ignore node_modules .next
 当前源码结构应保持轻量：
 
 ```txt
+AGENTS.md
+CLAUDE.md
+README.md
+PROJECT_CONTEXT.md
 app/
 ├── error.tsx
 ├── globals.css
@@ -167,11 +192,14 @@ public/assets/portfolio/
 
 2026-06-23 创意表达优化回退：用户希望“保留中英文切换，其他回到上一版本”。已在 `app/page.tsx` 移除 `9571346` 中新增的精选项目图片轻视差、项目辅助线/编号动画，以及中英文切换时的 `blur + fade` 包裹。页面保留原有 EN/中切换、首屏动效、加载动效、项目 hover 效果和中等尺寸精选项目布局。
 
-验证结果：`npm run build` 通过；本地与线上浏览器验证英文默认标题为 `Project Showcase`，点击 `中` 后切换为 `项目展示` 且 `html lang` 更新为 `zh-CN`；精选项目图不再带视差样式或辅助线；页面无横向溢出，控制台无 error/warn。线上已切到构建 `QjBAAZVz0y6iByhJZblwW`。
+验证结果：`npm run build` 通过；本地与线上浏览器验证英文默认标题为 `Project Showcase`，点击 `中` 后切换为 `项目展示` 且 `html lang` 更新为 `zh-CN`；精选项目图不再带视差样式或辅助线；页面无横向溢出，控制台无 error/warn。线上最终切到构建 `2DYuAUVTvR9ACWiuqlZ34`。
 
 ## 项目内已有文档
 
 - `PROJECT_CONTEXT.md`：当前项目总上下文，后续接手优先阅读。
+- `AGENTS.md`：Codex/Agent 执行入口和协作规则。
+- `CLAUDE.md`：Claude Code 交接入口。
+- `README.md`：人类维护者的运行、修改和部署说明。
 - `docs/portfolio-content-guide.md`：作品集内容和素材替换指南。
 
 ## 后续 Agent 接手注意事项
@@ -186,6 +214,5 @@ public/assets/portfolio/
 
 ## 可能的下一步
 
-- 为项目根目录补一个简洁 README，说明如何本地运行、替换内容、部署。
 - 将 `content/portfolio.ts` 进一步拆分为 `copy`、`projects`、`media`，如果后续内容规模变大。
 - 为作品详情页建立 `app/work/[slug]/page.tsx` 和 `public/assets/projects/{slug}/` 结构。
