@@ -128,38 +128,170 @@ export const copy = {
   },
 } as const
 
-export const workItems = [
+export interface WorkDetail {
+  overview: LocalizedText
+  role: LocalizedText
+  duration: LocalizedText
+  strategies: Array<{
+    title: LocalizedText
+    description: LocalizedText
+    image?: string
+  }>
+  effectImages?: string[]
+  outcomes: Array<{
+    metric: string
+    label: LocalizedText
+  }>
+  summary: LocalizedText
+}
+
+export interface WorkItem {
+  slug: string
+  title: LocalizedText
+  tagline?: LocalizedText
+  span: string
+  aspect: string
+  image: string
+  detail?: WorkDetail
+}
+
+export const workItems: WorkItem[] = [
   {
-    title: { en: 'Automotive Motion System', zh: '车载动效系统' },
+    slug: 'checkout-order-experience',
+    title: {
+      en: 'Checkout & Order Experience',
+      zh: '结算与履约体验升级',
+    },
+    tagline: {
+      en: 'Redesigned core transaction flow — half-sheet checkout, delivery progress tracking, reduced cognitive load.',
+      zh: '重构交易主链路结算与订单页，半屏浮窗降低操作感知，履约进度节点强化掌控感。',
+    },
     span: 'md:col-span-12',
     aspect: 'h-[340px] sm:h-[380px] md:h-[430px] lg:h-[520px]',
-    image:
-      'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1400&q=80',
+    image: '/assets/work/checkout-order/hero.png',
+    detail: {
+      overview: {
+        en: 'The checkout and order tracking pages are critical touchpoints in the core transaction flow of a large-scale food delivery platform. Over years of iteration, the pages accumulated complex information hierarchies, inconsistent interaction patterns, and rising customer complaints. This project aimed to fundamentally reimagine both pages — simplifying structure, strengthening fulfillment transparency, and elevating the end-to-end transaction experience.',
+        zh: '结算页与订单详情页是大型即时配送平台交易主链路上的关键环节，经过长期迭代，页面积累了复杂的信息层级、不一致的交互模式和持续上升的客诉。本项目旨在从根本上重新设计这两个页面——简化结构、强化履约透明度、提升端到端的交易体验。',
+      },
+      role: {
+        en: 'Lead UX Designer — Responsible for interaction design, information architecture, cross-team coordination with 10+ business teams',
+        zh: '主设计师 — 负责交互设计、信息架构、与 10+ 业务团队的跨团队协调',
+      },
+      duration: {
+        en: 'Approx. 6 months (research to launch)',
+        zh: '约 6 个月（调研到上线）',
+      },
+      strategies: [
+        {
+          title: {
+            en: 'Restructure Page Architecture',
+            zh: '重构页面架构',
+          },
+          description: {
+            en: 'Transformed the checkout from a full-page takeover into a lightweight half-sheet overlay, reducing perceived operational cost. Reordered information blocks based on user priority research and card-sorting analysis, consolidating scattered elements into a streamlined flow that balances user needs with business requirements from multiple stakeholder teams.',
+            zh: '将结算页从全屏独立页面改造为轻量半屏浮窗，降低用户操作感知成本。基于用户优先级调研和卡片分类分析重新排列信息模块，将分散的元素整合为简洁流程，在满足多个业务方需求的同时兼顾用户体验。',
+          },
+          image: '/assets/work/checkout-order/strategy-architecture.png',
+        },
+        {
+          title: {
+            en: 'Enhance Fulfillment Transparency',
+            zh: '强化履约信息透传',
+          },
+          description: {
+            en: 'Conducted a full-state audit of the order tracking page, redefining display priorities for delivery status. Added progress nodes to give users a sense of control over the delivery process. Refined status copy and escalation visibility to proactively manage user expectations and resolve pain points that previously generated complaints.',
+            zh: '对订单追踪页进行全状态盘点，重新定义配送状态的展示优先级。新增履约进度节点，让用户对配送流程有更强的掌控感。优化状态文案和异常提醒可见性，主动管理用户预期，解决此前产生客诉的痛点。',
+          },
+          image: '/assets/work/checkout-order/strategy-transparency.png',
+        },
+        {
+          title: {
+            en: 'Streamline Information Flow',
+            zh: '整合信息动线',
+          },
+          description: {
+            en: 'Unified inconsistent element styles, eliminated redundant visual layers, and standardized the reading flow across both pages. Redefined display rules to group related fields, simplify controls, and ensure edge cases render correctly — improving overall information acquisition efficiency.',
+            zh: '统一不一致的元素样式，消除冗余视觉层级，规范两个页面的阅读动线。重新定义展示规则以分组关联字段、简化控件，并确保边界场景正确渲染——整体提升信息获取效率。',
+          },
+        },
+      ],
+      outcomes: [
+        {
+          metric: '-n%',
+          label: {
+            en: 'Customer complaint rate reduction',
+            zh: '客诉率降低',
+          },
+        },
+        {
+          metric: '+npp',
+          label: {
+            en: 'Checkout conversion uplift',
+            zh: '结算转化率提升',
+          },
+        },
+        {
+          metric: '+npp',
+          label: {
+            en: 'Order completion rate improvement',
+            zh: '完单率提升',
+          },
+        },
+      ],
+      effectImages: [
+        '/assets/work/checkout-order/effect-1.png',
+        '/assets/work/checkout-order/effect-2.png',
+        '/assets/work/checkout-order/effect-3.png',
+        '/assets/work/checkout-order/effect-4.png',
+        '/assets/work/checkout-order/effect-5.png',
+      ],
+      summary: {
+        en: 'By restructuring the page architecture, refining fulfillment communication, and streamlining information design, the project delivered measurable improvements in conversion, completion, and user satisfaction while maintaining alignment with 10+ business teams\' requirements.',
+        zh: '通过重构页面架构、优化履约信息传达和简化信息设计，项目在转化率、完单率和用户满意度上取得了可量化的提升，同时与 10+ 业务团队的需求保持一致。',
+      },
+    },
   },
   {
-    title: { en: 'Urban Interface Space', zh: '城市空间界面' },
+    slug: 'urban-interface-space',
+    title: {
+      en: 'Urban Interface Space',
+      zh: '城市空间界面',
+    },
     span: 'md:col-span-6',
     aspect: 'h-[360px] sm:h-[400px] md:h-[380px] lg:h-[500px]',
-    image:
-      'https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=1100&q=80',
+    image: 'https://images.unsplash.com/photo-1518005020951-eccb494ad742?auto=format&fit=crop&w=1100&q=80',
   },
   {
-    title: { en: 'User Perspective Research', zh: '用户视角研究' },
+    slug: 'user-perspective-research',
+    title: {
+      en: 'User Perspective Research',
+      zh: '用户视角研究',
+    },
     span: 'md:col-span-6',
     aspect: 'h-[360px] sm:h-[400px] md:h-[380px] lg:h-[500px]',
-    image:
-      'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1100&q=80',
+    image: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1100&q=80',
   },
   {
-    title: { en: 'Brand Experience Identity', zh: '品牌体验识别' },
+    slug: 'brand-experience-identity',
+    title: {
+      en: 'Brand Experience Identity',
+      zh: '品牌体验识别',
+    },
     span: 'md:col-span-12',
     aspect: 'h-[340px] sm:h-[380px] md:h-[430px] lg:h-[520px]',
-    image:
-      'https://images.unsplash.com/photo-1600508774634-4e11d34730e2?auto=format&fit=crop&w=1400&q=80',
+    image: 'https://images.unsplash.com/photo-1600508774634-4e11d34730e2?auto=format&fit=crop&w=1400&q=80',
   },
 ]
 
 export const journalItems = [
+  {
+    title: { en: 'Redesigning Trust in Transaction Flows', zh: '重构交易链路中的信任感' },
+    date: '2026.04.12',
+    readTime: { en: '7 min read', zh: '7 分钟阅读' },
+    image:
+      'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=400&q=80',
+  },
   {
     title: { en: 'Designing With Slower Attention', zh: '用更慢的注意力做设计' },
     date: '2026.03.18',
