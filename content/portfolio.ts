@@ -128,21 +128,44 @@ export const copy = {
   },
 } as const
 
+export type WorkContentBlock =
+  | {
+      id: string
+      type: 'heading' | 'text'
+      content: LocalizedText
+    }
+  | {
+      id: string
+      type: 'image'
+      layout: 'wide'
+      src: string
+    }
+  | {
+      id: string
+      type: 'image'
+      layout: 'triple'
+      srcs: [string, string, string]
+    }
+
 export interface WorkDetail {
-  overview: LocalizedText
-  role: LocalizedText
-  duration: LocalizedText
-  strategies: Array<{
+  /** 页面按数组顺序连续渲染的自由内容流 */
+  blocks: WorkContentBlock[]
+
+  /** 以下字段保留以兼容早期内容，详情页不再固定渲染它们 */
+  overview?: LocalizedText
+  role?: LocalizedText
+  duration?: LocalizedText
+  strategies?: Array<{
     title: LocalizedText
     description: LocalizedText
     image?: string
   }>
   effectImages?: string[]
-  outcomes: Array<{
+  outcomes?: Array<{
     metric: string
     label: LocalizedText
   }>
-  summary: LocalizedText
+  summary?: LocalizedText
 }
 
 export interface WorkItem {
@@ -170,6 +193,152 @@ export const workItems: WorkItem[] = [
     aspect: 'h-[340px] sm:h-[380px] md:h-[430px] lg:h-[520px]',
     image: '/assets/work/checkout-order/hero.png',
     detail: {
+      blocks: [
+        {
+          id: 'context',
+          type: 'text',
+          content: {
+            en: 'The checkout and order tracking pages are critical touchpoints in the core transaction flow of a large-scale food delivery platform. Over years of iteration, the pages accumulated complex information hierarchies, inconsistent interaction patterns, and rising customer complaints. This project aimed to fundamentally reimagine both pages — simplifying structure, strengthening fulfillment transparency, and elevating the end-to-end transaction experience.',
+            zh: '结算页与订单详情页是大型即时配送平台交易主链路上的关键环节，经过长期迭代，页面积累了复杂的信息层级、不一致的交互模式和持续上升的客诉。本项目旨在从根本上重新设计这两个页面——简化结构、强化履约透明度、提升端到端的交易体验。',
+          },
+        },
+        {
+          id: 'hero-image',
+          type: 'image',
+          layout: 'wide',
+          src: '/assets/work/checkout-order/hero.png',
+        },
+        {
+          id: 'architecture-title',
+          type: 'heading',
+          content: {
+            en: 'Restructure page architecture',
+            zh: '重构页面架构',
+          },
+        },
+        {
+          id: 'architecture-copy',
+          type: 'text',
+          content: {
+            en: 'Transformed the checkout from a full-page takeover into a lightweight half-sheet overlay, reducing perceived operational cost. Reordered information blocks based on user priority research and card-sorting analysis, consolidating scattered elements into a streamlined flow that balances user needs with business requirements from multiple stakeholder teams.',
+            zh: '将结算页从全屏独立页面改造为轻量半屏浮窗，降低用户操作感知成本。基于用户优先级调研和卡片分类分析重新排列信息模块，将分散的元素整合为简洁流程，在满足多个业务方需求的同时兼顾用户体验。',
+          },
+        },
+        {
+          id: 'architecture-image',
+          type: 'image',
+          layout: 'wide',
+          src: '/assets/work/checkout-order/strategy-architecture.png',
+        },
+        {
+          id: 'transparency-title',
+          type: 'heading',
+          content: {
+            en: 'Enhance fulfillment transparency',
+            zh: '强化履约信息透传',
+          },
+        },
+        {
+          id: 'transparency-copy',
+          type: 'text',
+          content: {
+            en: 'Conducted a full-state audit of the order tracking page, redefining display priorities for delivery status. Added progress nodes to give users a sense of control over the delivery process. Refined status copy and escalation visibility to proactively manage user expectations and resolve pain points that previously generated complaints.',
+            zh: '对订单追踪页进行全状态盘点，重新定义配送状态的展示优先级。新增履约进度节点，让用户对配送流程有更强的掌控感。优化状态文案和异常提醒可见性，主动管理用户预期，解决此前产生客诉的痛点。',
+          },
+        },
+        {
+          id: 'transparency-image',
+          type: 'image',
+          layout: 'wide',
+          src: '/assets/work/checkout-order/strategy-transparency.png',
+        },
+        {
+          id: 'flow-title',
+          type: 'heading',
+          content: {
+            en: 'Streamline information flow',
+            zh: '整合信息动线',
+          },
+        },
+        {
+          id: 'flow-copy',
+          type: 'text',
+          content: {
+            en: 'Unified inconsistent element styles, eliminated redundant visual layers, and standardized the reading flow across both pages. Redefined display rules to group related fields, simplify controls, and ensure edge cases render correctly — improving overall information acquisition efficiency.',
+            zh: '统一不一致的元素样式，消除冗余视觉层级，规范两个页面的阅读动线。重新定义展示规则以分组关联字段、简化控件，并确保边界场景正确渲染——整体提升信息获取效率。',
+          },
+        },
+        {
+          id: 'output-title',
+          type: 'heading',
+          content: {
+            en: 'Design output',
+            zh: '设计产出',
+          },
+        },
+        {
+          id: 'output-01',
+          type: 'image',
+          layout: 'wide',
+          src: '/assets/work/checkout-order/effect-1.png',
+        },
+        {
+          id: 'output-02',
+          type: 'image',
+          layout: 'wide',
+          src: '/assets/work/checkout-order/effect-2.png',
+        },
+        {
+          id: 'output-03',
+          type: 'image',
+          layout: 'wide',
+          src: '/assets/work/checkout-order/effect-3.png',
+        },
+        {
+          id: 'output-04',
+          type: 'image',
+          layout: 'wide',
+          src: '/assets/work/checkout-order/effect-4.png',
+        },
+        {
+          id: 'output-05',
+          type: 'image',
+          layout: 'wide',
+          src: '/assets/work/checkout-order/effect-5.png',
+        },
+        {
+          id: 'result-title',
+          type: 'heading',
+          content: {
+            en: 'Results',
+            zh: '项目成果',
+          },
+        },
+        {
+          id: 'result-copy',
+          type: 'text',
+          content: {
+            en: 'Customer complaint rate decreased by -n%; checkout conversion increased by +npp; and order completion improved by +npp.',
+            zh: '客诉率降低 -n%，结算转化率提升 +npp，完单率提升 +npp。',
+          },
+        },
+        {
+          id: 'summary-title',
+          type: 'heading',
+          content: {
+            en: 'Reflection',
+            zh: '总结',
+          },
+        },
+        {
+          id: 'summary-copy',
+          type: 'text',
+          content: {
+            en: 'By restructuring the page architecture, refining fulfillment communication, and streamlining information design, the project delivered measurable improvements in conversion, completion, and user satisfaction while maintaining alignment with 10+ business teams\' requirements.',
+            zh: '通过重构页面架构、优化履约信息传达和简化信息设计，项目在转化率、完单率和用户满意度上取得了可量化的提升，同时与 10+ 业务团队的需求保持一致。',
+          },
+        },
+      ],
       overview: {
         en: 'The checkout and order tracking pages are critical touchpoints in the core transaction flow of a large-scale food delivery platform. Over years of iteration, the pages accumulated complex information hierarchies, inconsistent interaction patterns, and rising customer complaints. This project aimed to fundamentally reimagine both pages — simplifying structure, strengthening fulfillment transparency, and elevating the end-to-end transaction experience.',
         zh: '结算页与订单详情页是大型即时配送平台交易主链路上的关键环节，经过长期迭代，页面积累了复杂的信息层级、不一致的交互模式和持续上升的客诉。本项目旨在从根本上重新设计这两个页面——简化结构、强化履约透明度、提升端到端的交易体验。',
