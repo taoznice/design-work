@@ -289,12 +289,6 @@ export const workItems: WorkItem[] = [
           src: '/assets/work/checkout-order/effect-2.png',
         },
         {
-          id: 'output-03',
-          type: 'image',
-          layout: 'wide',
-          src: '/assets/work/checkout-order/effect-3.png',
-        },
-        {
           id: 'output-04',
           type: 'image',
           layout: 'wide',
