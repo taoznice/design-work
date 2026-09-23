@@ -17,7 +17,13 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" style={{ '--font-body': "'Inter', sans-serif", '--font-display': "'Instrument Serif', serif" } as React.CSSProperties}>
+    <html
+      lang="en"
+      style={{
+        '--font-body': "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        '--font-display': "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      } as React.CSSProperties}
+    >
       <body>{children}</body>
     </html>
   )
