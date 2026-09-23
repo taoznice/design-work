@@ -180,6 +180,130 @@ export interface WorkItem {
 
 export const workItems: WorkItem[] = [
   {
+    slug: 'waimai-desktop-widget',
+    title: {
+      en: 'Emotional Design for a Food-Delivery Widget',
+      zh: '外卖桌面小组件情感化设计',
+    },
+    tagline: {
+      en: 'Turning a home-screen utility entry into a daily companion — a scene-based content system and a cross-brand IP collaboration.',
+      zh: '把功能入口变成桌面上长期陪伴的「老朋友」——场景化内容矩阵与一次跨品牌 IP 联动。',
+    },
+    span: 'md:col-span-12',
+    aspect: 'h-[340px] sm:h-[380px] md:h-[430px] lg:h-[520px]',
+    image: '/assets/work/waimai-desktop-widget/hero.png',
+    detail: {
+      blocks: [
+        {
+          id: 'context',
+          type: 'text',
+          content: {
+            en: 'A home-screen widget is a true zero-level entry: it stays visible without the app ever being opened. For a high-frequency service like food delivery, the opportunity is bigger than a shortcut — it is a surface for long-running content. But research also flagged the risk: purely functional or promotional information fatigues quickly, and a fatigued widget gets deleted. The design question became: how can a marketing widget survive on the home screen through emotional content?',
+            zh: '桌面小组件是手机上的「0 级入口」——用户不打开 App，也能长期看到它。对于外卖这样高频刚需的业务，这个位置的机会不只是一个快捷跳转入口，更是一个可以长期运营内容的触点。但调研也指出了风险：如果展示的只是功能和利益信息，用户很容易视觉疲劳，最终把组件从桌面删掉。这个项目的核心命题因此变成——如何让一个营销属性的组件，靠情感化内容在用户的桌面上活下去。',
+          },
+        },
+        {
+          id: 'hero-image',
+          type: 'image',
+          layout: 'wide',
+          src: '/assets/work/waimai-desktop-widget/hero.png',
+        },
+        {
+          id: 'persona-title',
+          type: 'heading',
+          content: {
+            en: 'From shortcut to an old friend',
+            zh: '从快捷入口到「桌面上的老朋友」',
+          },
+        },
+        {
+          id: 'persona-copy',
+          type: 'text',
+          content: {
+            en: 'The design personifies the widget as a trendy, witty, living old friend. The kangaroo mascot is the protagonist of this small card: it has expressions, moods, and states, and it speaks in a caring, teasing, sometimes coquettish tone. The copy never shouts slogans or stacks incentives — it reads like a message from a friend: "A hard week deserves a good meal tonight." "Haven\u2019t seen you in days \u2014 how about a bowl of noodles?" The widget shifts from an ad slot pushed onto the home screen into a character that checks in on you.',
+            zh: '设计上把组件人格化为一个「潮、有趣、有梗、有活人感的老朋友」。袋鼠 IP 是这张小卡片的主角：它有表情、有情绪、有状态，会用关心的、撒娇的、调侃的语气和你说话。文案不喊口号、不堆利益点，而是像朋友发来的消息——「辛苦了一周，今晚吃点好的」「4 天都没见，不如吃碗面」。组件由此从一个被推送到桌面的广告位，变成一个主动关心你的角色。',
+          },
+        },
+        {
+          id: 'matrix-title',
+          type: 'heading',
+          content: {
+            en: 'A content matrix that follows the day',
+            zh: '跟着用户的一天和情绪走的内容矩阵',
+          },
+        },
+        {
+          id: 'matrix-copy',
+          type: 'text',
+          content: {
+            en: 'The content system is built around scenes and emotions, growing into dozens of widget states: meal-time nudges, afternoon tea and late-night cravings by time of day; rain, snow, heatwave and typhoon care by weather; streak encouragement, win-back pleas for lapsed users, and unused-coupon reminders by behavior. Each state combines a scene illustration, a witty one-liner, and a soft incentive hook, so the widget says the right thing at the right moment \u2014 "The best thing about a rainy day is a steaming hot meal," or on a Friday night, "Late-night happiness starts with a coupon."',
+            zh: '内容体系围绕「场景 × 情绪」搭建，持续产出数十种组件状态：按时间，有饭点提醒、下午茶、深夜宵夜；按天气，有下雨、下雪、高温、台风天的应景关怀；按行为，有连续下单的鼓励、久未下单的撒娇式挽回、未使用红包的提醒。每一种状态都由「场景插画 + 一句有梗的文案 + 利益钩子」构成，让组件在正确的时间说正确的话——下雨天说「最美不是下雨天，是热腾腾的美食」，周五深夜说「深夜的快乐，从用个红包开始」。',
+          },
+        },
+        {
+          id: 'matrix-image',
+          type: 'image',
+          layout: 'wide',
+          src: '/assets/work/waimai-desktop-widget/content-matrix.png',
+        },
+        {
+          id: 'visual-title',
+          type: 'heading',
+          content: {
+            en: 'Visual language: pop, yet unmistakable',
+            zh: '视觉语言：一眼跳脱，一眼认得',
+          },
+        },
+        {
+          id: 'visual-copy',
+          type: 'text',
+          content: {
+            en: 'Each card uses a saturated gradient to match its mood \u2014 deep blue for late night, hot orange-red for heatwaves, pale blue for snow. The kangaroo fully acts out every scene: soaking in a noodle bowl, lying on the moon, wiping sweat, wrapped in a blanket. The coupon capsule recurs as a visual anchor that carries the incentive. Among a grid of app icons, the widget has to pop instantly while staying unmistakably on-brand.',
+            zh: '每张卡片用高饱和的渐变底色匹配情绪氛围——宵夜的深蓝、高温的橙红、雪天的浅蓝；袋鼠在每个场景里「入戏」：泡进面碗、躺在月亮上、热到扶额、裹进被子；红包则作为反复出现的视觉锚点，串联起利益信息。在桌面一众 App 图标之间，组件既要足够跳脱吸引目光，又要保持一眼可识别的品牌感。',
+          },
+        },
+        {
+          id: 'collab-title',
+          type: 'heading',
+          content: {
+            en: 'A cross-brand collaboration',
+            zh: '一次跨界联动',
+          },
+        },
+        {
+          id: 'collab-copy',
+          type: 'text',
+          content: {
+            en: 'The Duolingo collaboration pushed the emotional design into meme territory: Duo the owl and the kangaroo became an official pair \u2014 "one feeds your brain, the other feeds your stomach." The two mascots\u2019 personalities collide on each card: Duo nags you to eat with its signature passive-aggressive temper while the kangaroo plays the caring one. Lines like "Not eating on time? Duo is upset" borrow Duolingo\u2019s native meme culture, giving the widget content organic reach on social platforms.',
+            zh: '与多邻国的联动把情感化推向 meme 化：多儿 Duo 和袋鼠组成「一个管脑，一个管胃」的官方 CP。两个 IP 的性格在卡片上对撞——Duo 带着它标志性的傲娇小脾气催你吃饭，袋鼠在一旁贴心补位。「吃饭不积极，Duo 有小脾气」这类文案借多邻国自带的梗文化，让组件内容具备了在社交场自传播的潜力。',
+          },
+        },
+        {
+          id: 'collab-image',
+          type: 'image',
+          layout: 'wide',
+          src: '/assets/work/waimai-desktop-widget/duolingo-collab.png',
+        },
+        {
+          id: 'reflection-title',
+          type: 'heading',
+          content: {
+            en: 'Reflection',
+            zh: '设计思考',
+          },
+        },
+        {
+          id: 'reflection-copy',
+          type: 'text',
+          content: {
+            en: 'A widget lives by a simple rule: it stays on the home screen only if it is delightful to look at. In this project, emotional design is not decoration \u2014 it is the retention mechanism that turns an entry point into companionship. When content follows the rhythm, weather, and mood of the person holding the phone, every glance becomes less an impression and more a greeting.',
+            zh: '小组件有一个朴素的生存法则：好看、有趣，才会被留在桌面上。所以在这个项目里，情感化不是装饰，而是留存机制——它让组件从「入口」变成「陪伴」。当内容开始跟着用户的作息、天气和情绪走，每天解锁手机时的一眼，就不再是一次曝光，而是一次打招呼。',
+          },
+        },
+      ],
+    },
+  },
+  {
     slug: 'checkout-order-experience',
     title: {
       en: 'Checkout & Order Experience',
