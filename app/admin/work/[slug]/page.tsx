@@ -78,8 +78,8 @@ function InlineEdit({
       title={!editing ? '点击编辑' : undefined}
       className={`${className} ${
         editing
-          ? 'whitespace-pre-wrap bg-white/5 outline outline-1 outline-white/35 outline-offset-4'
-          : 'cursor-text whitespace-pre-wrap transition-colors hover:text-white hover:underline hover:decoration-white/25 hover:underline-offset-4 focus:outline focus:outline-1 focus:outline-white/35 focus:outline-offset-4'
+          ? 'whitespace-pre-wrap bg-black/[0.03] outline outline-1 outline-black/30 outline-offset-4'
+          : 'cursor-text whitespace-pre-wrap transition-colors hover:text-text-primary hover:underline hover:decoration-text-primary/25 hover:underline-offset-4 focus:outline focus:outline-1 focus:outline-black/30 focus:outline-offset-4'
       } ${!value && !editing ? 'text-muted' : ''}`}
     >
       {value || placeholder}
@@ -122,7 +122,7 @@ function ImageSlot({
   }
 
   return (
-    <div className={`group/image relative overflow-hidden border border-transparent transition-colors hover:border-white/25 focus-within:border-white/25 ${className}`}>
+    <div className={`group/image relative overflow-hidden border border-transparent transition-colors hover:border-black/20 focus-within:border-black/20 ${className}`}>
       {src ? (
         <img src={src} alt="" className="block h-auto w-full bg-surface object-contain" />
       ) : (
@@ -209,7 +209,7 @@ function BlockActions({
         title="删除此内容"
         aria-label="删除此内容"
         onClick={onDelete}
-        className="inline-flex items-center gap-1 border border-red-400/30 bg-bg/90 px-2 py-1.5 text-[10px] text-red-200 transition-colors hover:border-red-300 hover:bg-red-950/60 hover:text-red-100"
+        className="inline-flex items-center gap-1 border border-red-300/60 bg-bg/90 px-2 py-1.5 text-[10px] text-red-500 transition-colors hover:border-red-400 hover:bg-red-50 hover:text-red-600"
       >
         <Trash2 size={11} strokeWidth={1.5} /> 删除
       </button>
@@ -410,9 +410,9 @@ export default function AdminWorkEditPage() {
   return (
     <main className="min-h-screen bg-bg font-body text-text-primary">
       <header className="sticky top-0 z-50 border-b border-stroke bg-bg/95 backdrop-blur-sm">
-        <div className="mx-auto flex w-full max-w-[1240px] items-center justify-between px-5 py-4 sm:px-8 lg:px-10">
-          <Link href="/admin" className="inline-flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.1em] text-muted transition-colors hover:text-text-primary">
-            <ArrowLeft size={13} strokeWidth={1.5} /> 返回列表
+        <div className="mx-auto flex w-full max-w-[72rem] items-center justify-between px-6 py-4">
+          <Link href="/admin" className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-muted transition-colors hover:text-text-primary">
+            <ArrowLeft size={15} strokeWidth={2} /> 返回列表
           </Link>
           <div className="flex items-center gap-6">
             <LanguageSwitch language={language} setLanguage={setLanguage} />
@@ -420,9 +420,9 @@ export default function AdminWorkEditPage() {
               type="button"
               onClick={handleSave}
               disabled={saving}
-              className="inline-flex items-center gap-2 border border-text-primary px-3 py-1.5 text-[11px] font-medium uppercase tracking-[0.08em] transition-colors hover:bg-text-primary hover:text-bg disabled:cursor-not-allowed disabled:opacity-50"
+              className="inline-flex items-center gap-2 rounded-full border border-text-primary px-4 py-1.5 text-[13px] font-semibold transition-colors hover:bg-text-primary hover:text-bg disabled:cursor-not-allowed disabled:opacity-50"
             >
-              {saving ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} strokeWidth={1.5} />}
+              {saving ? <Loader2 size={12} className="animate-spin" /> : <Save size={12} strokeWidth={2} />}
               {saving ? '保存中' : '保存'}
             </button>
           </div>
@@ -430,17 +430,17 @@ export default function AdminWorkEditPage() {
       </header>
 
       {message && (
-        <div className={`fixed right-5 top-16 z-50 border px-3 py-2 text-xs ${message.startsWith('保存失败') ? 'border-red-400/40 bg-red-950 text-red-100' : 'border-white/25 bg-bg text-text-primary'}`}>
+        <div className={`fixed right-5 top-16 z-50 rounded-lg border px-3 py-2 text-xs ${message.startsWith('保存失败') ? 'border-red-200 bg-red-50 text-red-600' : 'border-stroke bg-bg text-text-primary'}`}>
           {message}
         </div>
       )}
 
-      <article className="mx-auto w-full max-w-[1240px] px-5 pb-24 pt-10 sm:px-8 sm:pt-16 lg:px-10 lg:pb-32">
+      <article className="mx-auto w-full max-w-[72rem] px-6 pb-24 pt-10 sm:pt-14 lg:pb-32">
         <InlineEdit
           value={item.title[language]}
           onChange={updateTitle}
           as="h1"
-          className="mx-auto max-w-[48rem] text-4xl font-normal leading-[1.08] tracking-[-0.05em] text-text-primary sm:text-6xl lg:text-7xl"
+          className="text-[26px] font-extrabold leading-[1.35] tracking-tight text-text-primary sm:text-[32px]"
           placeholder="输入项目标题"
         />
 
@@ -470,7 +470,7 @@ export default function AdminWorkEditPage() {
                   value={block.content[language]}
                   onChange={(value) => updateTextBlock(index, value)}
                   as="h2"
-                  className="mx-auto max-w-[48rem] pt-12 text-2xl font-medium leading-[1.2] tracking-[-0.035em] text-text-primary sm:pt-20 sm:text-3xl"
+                  className="pt-14 text-[21px] font-bold leading-[1.35] text-text-primary sm:pt-16 sm:text-[24px]"
                   placeholder="输入段落标题"
                 />
               )}
@@ -480,7 +480,7 @@ export default function AdminWorkEditPage() {
                   value={block.content[language]}
                   onChange={(value) => updateTextBlock(index, value)}
                   as="p"
-                  className="mx-auto max-w-[48rem] pt-5 text-base leading-[1.8] text-text-primary/80 sm:pt-6 sm:text-lg sm:leading-[1.75]"
+                  className="pt-5 text-[17px] leading-[1.8] text-muted sm:pt-6 sm:text-[21px] sm:leading-[1.72]"
                   placeholder="输入段落文字"
                   multiline
                 />
@@ -491,20 +491,20 @@ export default function AdminWorkEditPage() {
                   src={block.src}
                   slug={slug}
                   onUpdate={(src) => updateWideImage(index, src)}
-                  className="mx-auto max-w-[48rem] pt-10 sm:pt-16"
+                  className="mt-10 rounded-[20px] sm:mt-14"
                   label="替换横图"
                 />
               )}
 
               {block.type === 'image' && block.layout === 'triple' && (
-                <div className="mx-auto grid max-w-[48rem] grid-cols-3 gap-2 pt-10 sm:gap-4 sm:pt-16">
+                <div className="mt-10 grid grid-cols-3 gap-3 sm:mt-14 sm:gap-5">
                   {block.srcs.map((src, imageIndex) => (
                     <ImageSlot
                       key={imageIndex}
                       src={src}
                       slug={slug}
                       onUpdate={(path) => updateTripleImage(index, imageIndex, path)}
-                      className="aspect-[9/16]"
+                      className="aspect-[9/16] rounded-2xl"
                       label="替换竖图"
                     />
                   ))}
@@ -514,20 +514,20 @@ export default function AdminWorkEditPage() {
           ))}
         </div>
 
-        <div className="mx-auto mt-16 max-w-[48rem] border-t border-stroke pt-5 sm:mt-24">
-          <p className="mb-3 text-[10px] font-medium uppercase tracking-[0.1em] text-muted">新增内容</p>
+        <div className="mt-20 border-t border-stroke pt-6">
+          <p className="mb-3 text-[13px] font-semibold text-muted">新增内容</p>
           <div className="flex flex-wrap gap-x-5 gap-y-3">
-            <button type="button" onClick={() => addBlock('heading')} className="inline-flex items-center gap-1.5 text-[11px] text-muted transition-colors hover:text-text-primary">
-              <Plus size={13} strokeWidth={1.5} /> 段落标题
+            <button type="button" onClick={() => addBlock('heading')} className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-muted transition-colors hover:text-text-primary">
+              <Plus size={14} strokeWidth={2} /> 段落标题
             </button>
-            <button type="button" onClick={() => addBlock('text')} className="inline-flex items-center gap-1.5 text-[11px] text-muted transition-colors hover:text-text-primary">
-              <Plus size={13} strokeWidth={1.5} /> 段落文字
+            <button type="button" onClick={() => addBlock('text')} className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-muted transition-colors hover:text-text-primary">
+              <Plus size={14} strokeWidth={2} /> 段落文字
             </button>
-            <button type="button" onClick={() => addBlock('wide-image')} className="inline-flex items-center gap-1.5 text-[11px] text-muted transition-colors hover:text-text-primary">
-              <Plus size={13} strokeWidth={1.5} /> 单张横图
+            <button type="button" onClick={() => addBlock('wide-image')} className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-muted transition-colors hover:text-text-primary">
+              <Plus size={14} strokeWidth={2} /> 单张横图
             </button>
-            <button type="button" onClick={() => addBlock('triple-image')} className="inline-flex items-center gap-1.5 text-[11px] text-muted transition-colors hover:text-text-primary">
-              <Plus size={13} strokeWidth={1.5} /> 三张竖图
+            <button type="button" onClick={() => addBlock('triple-image')} className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-muted transition-colors hover:text-text-primary">
+              <Plus size={14} strokeWidth={2} /> 三张竖图
             </button>
           </div>
         </div>

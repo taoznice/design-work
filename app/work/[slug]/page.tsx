@@ -8,7 +8,7 @@ import { workItems, type Language, type WorkContentBlock } from '@/content/portf
 
 function LanguageSwitch({ language, setLanguage }: { language: Language; setLanguage: (language: Language) => void }) {
   return (
-    <div className="flex items-center gap-3 text-[11px] font-medium tracking-[0.08em] text-muted">
+    <div className="flex items-center gap-3 text-[13px] font-semibold text-muted">
       {(['en', 'zh'] as const).map((option) => (
         <button
           key={option}
@@ -27,7 +27,7 @@ function LanguageSwitch({ language, setLanguage }: { language: Language; setLang
 function ContentBlock({ block, language }: { block: WorkContentBlock; language: Language }) {
   if (block.type === 'heading') {
     return (
-      <h2 className="mx-auto max-w-[48rem] pt-12 text-2xl font-medium leading-[1.2] tracking-[-0.035em] text-text-primary sm:pt-20 sm:text-3xl">
+      <h2 className="pt-14 text-[21px] font-bold leading-[1.35] text-text-primary sm:pt-16 sm:text-[24px]">
         {block.content[language]}
       </h2>
     )
@@ -35,7 +35,7 @@ function ContentBlock({ block, language }: { block: WorkContentBlock; language: 
 
   if (block.type === 'text') {
     return (
-      <p className="mx-auto max-w-[48rem] whitespace-pre-wrap pt-5 text-base leading-[1.8] text-text-primary/80 sm:pt-6 sm:text-lg sm:leading-[1.75]">
+      <p className="whitespace-pre-wrap pt-5 text-[17px] leading-[1.8] text-muted sm:pt-6 sm:text-[21px] sm:leading-[1.72]">
         {block.content[language]}
       </p>
     )
@@ -45,21 +45,21 @@ function ContentBlock({ block, language }: { block: WorkContentBlock; language: 
 
   if (block.layout === 'wide') {
     return (
-      <figure className="mx-auto max-w-[48rem] pt-10 sm:pt-16">
-        <img src={block.src} alt="" loading="lazy" className="block w-full bg-surface" />
+      <figure className="pt-10 sm:pt-14">
+        <img src={block.src} alt="" loading="lazy" className="block w-full rounded-[20px] bg-surface" />
       </figure>
     )
   }
 
   return (
-    <figure className="mx-auto grid max-w-[48rem] grid-cols-3 gap-2 pt-10 sm:gap-4 sm:pt-16">
+    <figure className="grid grid-cols-3 gap-3 pt-10 sm:gap-5 sm:pt-14">
       {block.srcs.map((src, index) => (
         <img
           key={`${src}-${index}`}
           src={src}
           alt=""
           loading="lazy"
-          className="aspect-[9/16] w-full bg-surface object-contain"
+          className="aspect-[9/16] w-full rounded-2xl bg-surface object-contain"
         />
       ))}
     </figure>
@@ -80,34 +80,36 @@ export default function WorkDetailPage() {
 
   return (
     <main className="min-h-screen bg-bg font-body text-text-primary">
-      <header className="mx-auto flex w-full max-w-[1240px] items-center justify-between px-5 py-5 sm:px-8 lg:px-10">
-        <Link
-          href="/#work"
-          className="inline-flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.1em] text-muted transition-colors hover:text-text-primary"
-        >
-          <ArrowLeft size={13} strokeWidth={1.5} />
-          {language === 'en' ? 'All work' : '全部作品'}
-        </Link>
-        <LanguageSwitch language={language} setLanguage={setLanguage} />
+      <header className="sticky top-0 z-50 bg-bg/85 backdrop-blur-md">
+        <div className="mx-auto flex w-full max-w-[72rem] items-center justify-between px-6 py-4">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2 text-[13px] font-semibold text-muted transition-colors hover:text-text-primary"
+          >
+            <ArrowLeft size={15} strokeWidth={2} />
+            {language === 'en' ? 'All work' : '全部作品'}
+          </Link>
+          <LanguageSwitch language={language} setLanguage={setLanguage} />
+        </div>
       </header>
 
-      <article className="mx-auto w-full max-w-[1240px] px-5 pb-24 pt-10 sm:px-8 sm:pt-16 lg:px-10 lg:pb-32">
-        <h1 className="mx-auto max-w-[48rem] text-4xl font-normal leading-[1.08] tracking-[-0.05em] text-text-primary sm:text-6xl lg:text-7xl">
+      <article className="mx-auto w-full max-w-[72rem] px-6 pb-24 pt-10 sm:pt-14">
+        <h1 className="text-[26px] font-extrabold leading-[1.35] tracking-tight text-text-primary sm:text-[32px]">
           {item.title[language]}
         </h1>
 
-        <div className="pt-2 sm:pt-4">
+        <div className="pt-2">
           {item.detail.blocks.map((block) => (
             <ContentBlock key={block.id} block={block} language={language} />
           ))}
         </div>
 
-        <div className="mx-auto mt-20 max-w-[48rem] border-t border-stroke pt-6 sm:mt-28">
+        <div className="mt-20 border-t border-stroke pt-6 sm:mt-24">
           <Link
-            href="/#work"
-            className="inline-flex items-center gap-2 text-[11px] font-medium uppercase tracking-[0.1em] text-muted transition-colors hover:text-text-primary"
+            href="/"
+            className="inline-flex items-center gap-2 text-[13px] font-semibold text-muted transition-colors hover:text-text-primary"
           >
-            <ArrowLeft size={13} strokeWidth={1.5} />
+            <ArrowLeft size={15} strokeWidth={2} />
             {language === 'en' ? 'Return to all work' : '返回全部作品'}
           </Link>
         </div>

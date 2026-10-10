@@ -20,8 +20,8 @@ export default function RootLayout({
     <html
       lang="en"
       style={{
-        '--font-body': "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-        '--font-display': "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+        '--font-body': "ui-rounded, 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', 'PingFang SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif",
+        '--font-display': "ui-rounded, 'SF Pro Rounded', 'Hiragino Maru Gothic ProN', 'PingFang SC', 'Microsoft YaHei', system-ui, -apple-system, sans-serif",
       } as React.CSSProperties}
     >
       <body>{children}</body>
