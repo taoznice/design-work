@@ -41,7 +41,7 @@ export default function HomePage() {
   return (
     <main className="flex min-h-screen flex-col bg-bg font-body text-text-primary">
       <header className="mx-auto flex w-full max-w-[72rem] items-center justify-between px-6 py-6">
-        <span className="text-sm font-extrabold tracking-tight">ZD</span>
+        <span className="text-sm font-extrabold tracking-tight">ZPD</span>
         <LanguageSwitch language={language} setLanguage={setLanguage} />
       </header>
 
