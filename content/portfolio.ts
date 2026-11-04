@@ -1,7 +1,7 @@
 export type Language = 'en' | 'zh'
 export type LocalizedText = Record<Language, string>
 
-export const CONTACT_EMAIL = 'hello@design-workbench.top'
+export const CONTACT_EMAIL = 'taoznice@gmail.com'
 export const CONTACT_LINK = `mailto:${CONTACT_EMAIL}`
 
 export const HLS_SOURCE = 'https://stream.mux.com/Aa02T7oM1wH5Mk5EEVDYhbZ1ChcdhRsS2m1NYyx4Ua1g.m3u8'

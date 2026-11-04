@@ -36,7 +36,15 @@ npm run build
 - `app/layout.tsx`：根布局和默认 metadata
 - `app/error.tsx`：友好错误页
 - `docs/portfolio-content-guide.md`：素材和内容替换指南
+- `docs/projects-index.md`：作品集项目总索引（每个项目的 slug / Wiki 链接 / 状态），新对话先读
 - `PROJECT_CONTEXT.md`：项目上下文与交接记录
+
+## 多项目协作工作流
+
+- 用户会陆续整理十几个作品集项目，每个项目用独立对话讨论（开场会说项目名）。
+- 新对话涉及具体项目时：先读 `docs/projects-index.md` 找到该项目的状态和 Wiki 链接，再用 citadel 读 Wiki 正文恢复上下文。
+- Wiki 是文案权威版本，`portfolio.ts` 是发布快照；修改以 Wiki 为准。
+- 发布项目 = 从 Wiki 转成 `portfolio.ts` 条目 → 本地验证 → commit + push。
 
 ## 注意事项
 
