@@ -4,9 +4,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import path from 'path'
 
 /**
- * 图片上传 API
- * 接收 multipart/form-data，将图片保存到 public/assets/work/[slug]/ 目录
- * 返回可直接在前台使用的图片路径
+ * 素材上传 API
+ * 接收 multipart/form-data，将图片/视频保存到 public/assets/work/[slug]/ 目录
+ * 返回可直接在前台使用的素材路径
  */
 export async function POST(request: NextRequest) {
   try {
@@ -18,10 +18,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '缺少文件或 slug 参数' }, { status: 400 })
     }
 
-    // 验证文件类型
-    const allowedTypes = ['image/png', 'image/jpeg', 'image/webp', 'image/gif']
+    // 验证文件类型：图片 + 视频
+    const allowedTypes = ['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'video/mp4', 'video/webm', 'video/quicktime']
     if (!allowedTypes.includes(file.type)) {
-      return NextResponse.json({ error: '不支持的文件类型，仅支持 PNG/JPEG/WebP/GIF' }, { status: 400 })
+      return NextResponse.json({ error: '不支持的文件类型，仅支持 PNG/JPEG/WebP/GIF/MP4/WebM/MOV' }, { status: 400 })
     }
 
     // 生成文件名：时间戳 + 原始扩展名

@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { workItems, type Language, type LocalizedText, type WorkContentBlock, type WorkItem } from '@/content/portfolio'
+import { isVideoSrc } from '@/lib/media'
 
 function createId() {
   return globalThis.crypto?.randomUUID?.() || `block-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
@@ -124,14 +125,18 @@ function ImageSlot({
   return (
     <div className={`group/image relative overflow-hidden border border-transparent transition-colors hover:border-black/20 focus-within:border-black/20 ${className}`}>
       {src ? (
-        <img src={src} alt="" className="block h-auto w-full bg-surface object-contain" />
+        isVideoSrc(src) ? (
+          <video src={src} autoPlay loop muted playsInline className="block h-auto w-full bg-surface object-contain" />
+        ) : (
+          <img src={src} alt="" className="block h-auto w-full bg-surface object-contain" />
+        )
       ) : (
         <button
           type="button"
           onClick={() => inputRef.current?.click()}
           className="flex h-full min-h-40 w-full items-center justify-center bg-surface text-[10px] font-medium uppercase tracking-[0.08em] text-muted transition-colors hover:text-text-primary"
         >
-          <Camera size={12} className="mr-2" /> 添加图片
+          <Camera size={12} className="mr-2" /> 添加图片/视频
         </button>
       )}
       {src && (
@@ -148,7 +153,7 @@ function ImageSlot({
       <input
         ref={inputRef}
         type="file"
-        accept="image/*"
+        accept="image/*,video/mp4,video/webm,video/quicktime"
         className="hidden"
         onChange={(event) => {
           const file = event.target.files?.[0]

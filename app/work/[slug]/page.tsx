@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { notFound, useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { workItems, type Language, type WorkContentBlock } from '@/content/portfolio'
+import { isVideoSrc } from '@/lib/media'
 
 function LanguageSwitch({ language, setLanguage }: { language: Language; setLanguage: (language: Language) => void }) {
   return (
@@ -46,22 +47,38 @@ function ContentBlock({ block, language }: { block: WorkContentBlock; language: 
   if (block.layout === 'wide') {
     return (
       <figure className="pt-10 sm:pt-14">
-        <img src={block.src} alt="" loading="lazy" className="block w-full rounded-[20px] bg-surface" />
+        {isVideoSrc(block.src) ? (
+          <video src={block.src} autoPlay loop muted playsInline className="block w-full rounded-[20px] bg-surface" />
+        ) : (
+          <img src={block.src} alt="" loading="lazy" className="block w-full rounded-[20px] bg-surface" />
+        )}
       </figure>
     )
   }
 
   return (
     <figure className="grid grid-cols-3 gap-3 pt-10 sm:gap-5 sm:pt-14">
-      {block.srcs.map((src, index) => (
-        <img
-          key={`${src}-${index}`}
-          src={src}
-          alt=""
-          loading="lazy"
-          className="aspect-[9/16] w-full rounded-2xl bg-surface object-contain"
-        />
-      ))}
+      {block.srcs.map((src, index) =>
+        isVideoSrc(src) ? (
+          <video
+            key={`${src}-${index}`}
+            src={src}
+            autoPlay
+            loop
+            muted
+            playsInline
+            className="aspect-[9/16] w-full rounded-2xl bg-surface object-contain"
+          />
+        ) : (
+          <img
+            key={`${src}-${index}`}
+            src={src}
+            alt=""
+            loading="lazy"
+            className="aspect-[9/16] w-full rounded-2xl bg-surface object-contain"
+          />
+        ),
+      )}
     </figure>
   )
 }
