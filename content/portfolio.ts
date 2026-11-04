@@ -784,9 +784,9 @@ export const workItems: WorkItem[] = [
           type: 'image',
           layout: 'triple',
           srcs: [
-            '/assets/work/waimai-second-floor/1793795219692.mp4',
-            '',
-            '',
+            '/assets/work/waimai-second-floor/1793795605041.mp4',
+            '/assets/work/waimai-second-floor/1793795699293.mov',
+            '/assets/work/waimai-second-floor/1793795668800.mp4',
           ],
         },
         {
