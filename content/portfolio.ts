@@ -176,6 +176,8 @@ export interface WorkItem {
   aspect: string
   image: string
   detail?: WorkDetail
+  /** CMS 隐藏标记：true 时前台列表不展示该作品 */
+  hidden?: boolean
 }
 
 export const workItems: WorkItem[] = [

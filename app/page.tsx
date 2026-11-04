@@ -50,7 +50,9 @@ export default function HomePage() {
 
         <nav aria-label="Projects" className="mt-16 w-full max-w-[26rem] sm:mt-20">
           <ul>
-            {workItems.map((item) => {
+            {workItems
+              .filter((item) => !item.hidden)
+              .map((item) => {
               const Icon = projectIcons[item.slug] ?? Asterisk
               const label = item.title[language]
 
