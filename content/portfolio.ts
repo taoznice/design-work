@@ -302,6 +302,7 @@ export const workItems: WorkItem[] = [
         },
       ],
     },
+    hidden: true,
   },
   {
     slug: 'checkout-order-experience',
@@ -538,6 +539,7 @@ export const workItems: WorkItem[] = [
         zh: '通过重构页面架构、优化履约信息传达和简化信息设计，项目在转化率、完单率和用户满意度上取得了可量化的提升，同时与 10+ 业务团队的需求保持一致。',
       },
     },
+    hidden: true,
   },
   {
     slug: 'urban-interface-space',
