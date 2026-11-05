@@ -4,6 +4,17 @@ import { Asterisk, Building2, Fingerprint, LayoutGrid, Search, ShoppingBag } fro
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { CONTACT_EMAIL, copy, workItems, type Language } from '@/content/portfolio'
+import { isVideoSrc } from '@/lib/media'
+
+/** 首页列表行的封面缩略媒体（视频默认静音循环播放） */
+function CoverMedia({ src, label }: { src: string; label: string }) {
+  const className = 'h-14 w-24 rounded-xl bg-surface object-cover sm:h-16 sm:w-28'
+  if (isVideoSrc(src)) {
+    return <video src={src} autoPlay loop muted playsInline preload="metadata" className={className} aria-label={label} />
+  }
+  // eslint-disable-next-line @next/next/no-img-element
+  return <img src={src} alt={label} loading="lazy" className={className} />
+}
 
 const projectIcons: Record<string, typeof LayoutGrid> = {
   'waimai-desktop-widget': LayoutGrid,
@@ -58,9 +69,13 @@ export default function HomePage() {
 
               if (!item.detail) {
                 return (
-                  <li key={item.slug} className="flex items-center justify-between py-5 text-muted">
-                    <span className="text-[19px] font-semibold leading-snug">{label}</span>
-                    <Icon size={19} strokeWidth={1.8} className="shrink-0" aria-hidden />
+                  <li key={item.slug} className="flex items-center justify-between gap-6 py-5 text-muted">
+                    <span className="min-w-0 text-[19px] font-semibold leading-snug">{label}</span>
+                    {item.image ? (
+                      <CoverMedia src={item.image} label={label} />
+                    ) : (
+                      <Icon size={19} strokeWidth={1.8} className="shrink-0" aria-hidden />
+                    )}
                   </li>
                 )
               }
@@ -69,17 +84,21 @@ export default function HomePage() {
                 <li key={item.slug}>
                   <Link
                     href={`/work/${item.slug}`}
-                    className="group flex items-center justify-between py-5 text-text-primary"
+                    className="group flex items-center justify-between gap-6 py-5 text-text-primary"
                   >
-                    <span className="text-[19px] font-semibold leading-snug transition-opacity group-hover:opacity-60">
+                    <span className="min-w-0 text-[19px] font-semibold leading-snug transition-opacity group-hover:opacity-60">
                       {label}
                     </span>
-                    <Icon
-                      size={19}
-                      strokeWidth={1.8}
-                      className="shrink-0 text-muted transition-colors group-hover:text-text-primary"
-                      aria-hidden
-                    />
+                    {item.image ? (
+                      <CoverMedia src={item.image} label={label} />
+                    ) : (
+                      <Icon
+                        size={19}
+                        strokeWidth={1.8}
+                        className="shrink-0 text-muted transition-colors group-hover:text-text-primary"
+                        aria-hidden
+                      />
+                    )}
                   </Link>
                 </li>
               )

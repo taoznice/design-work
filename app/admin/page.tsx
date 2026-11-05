@@ -5,9 +5,10 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import type { WorkItem } from '@/content/portfolio'
+import { isVideoSrc } from '@/lib/media'
 
 // admin 内部使用的作品类型：在 WorkItem 基础上加一个可选的隐藏标记
-// hidden 为 true 时前台不展示该作品（前台渲染逻辑后续按需接入）
+// hidden 为 true 时前台首页列表不展示该作品（已在 app/page.tsx 接入）
 type AdminWorkItem = WorkItem & { hidden?: boolean }
 
 /**
@@ -190,14 +191,18 @@ export default function AdminPage() {
             {/* 封面缩略图 */}
             <div className="relative h-16 w-24 shrink-0 overflow-hidden rounded-md bg-neutral-100">
               {item.image ? (
-                <Image
-                  src={item.image}
-                  alt={item.title.zh || item.title.en}
-                  fill
-                  sizes="96px"
-                  className="object-cover"
-                  unoptimized
-                />
+                isVideoSrc(item.image) ? (
+                  <video src={item.image} muted playsInline preload="metadata" className="h-full w-full object-cover" />
+                ) : (
+                  <Image
+                    src={item.image}
+                    alt={item.title.zh || item.title.en}
+                    fill
+                    sizes="96px"
+                    className="object-cover"
+                    unoptimized
+                  />
+                )
               ) : (
                 <div className="flex h-full w-full items-center justify-center text-[10px] text-neutral-400">
                   无图片

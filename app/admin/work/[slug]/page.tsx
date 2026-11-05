@@ -1,6 +1,6 @@
 'use client'
 
-import { ArrowDown, ArrowLeft, ArrowUp, Camera, GripVertical, Loader2, Plus, Save, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowLeft, ArrowUp, Camera, GripVertical, Images, Loader2, Plus, Save, Sparkles, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
@@ -265,6 +265,13 @@ export default function AdminWorkEditPage() {
   const [dropTargetId, setDropTargetId] = useState<string | null>(null)
   const sourceItem = workItems.find((work) => work.slug === slug)
   const [item, setItem] = useState<WorkItem | null>(null)
+  const coverInputRef = useRef<HTMLInputElement>(null)
+  const [coverPickerOpen, setCoverPickerOpen] = useState(false)
+  const [coverUploading, setCoverUploading] = useState(false)
+  const [coverAiOpen, setCoverAiOpen] = useState(false)
+  const [coverPrompt, setCoverPrompt] = useState('')
+  const [coverRefs, setCoverRefs] = useState<string[]>([])
+  const [coverGenerating, setCoverGenerating] = useState(false)
 
   useEffect(() => {
     if (sourceItem) setItem(JSON.parse(JSON.stringify(sourceItem)))
@@ -279,6 +286,66 @@ export default function AdminWorkEditPage() {
   }
 
   const blocks = item.detail.blocks || []
+
+  /** 项目内已上传的全部素材（详情页配图 + 当前封面），用于封面选择器 */
+  const projectMedia = Array.from(
+    new Set(
+      blocks
+        .flatMap((block) => {
+          if (block.type !== 'image') return []
+          return block.layout === 'wide' ? [block.src] : [...block.srcs]
+        })
+        .concat(item.image ? [item.image] : [])
+        .filter(Boolean),
+    ),
+  )
+
+  /** 上传封面：复用素材上传接口，成功后设为 item.image */
+  async function handleCoverFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+    setCoverUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('slug', slug)
+      const response = await fetch('/api/admin/upload', { method: 'POST', body: formData })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || '上传失败')
+      updateItem({ image: data.path })
+    } catch (error) {
+      setMessage(`封面上传失败：${error instanceof Error ? error.message : '未知错误'}`)
+    } finally {
+      setCoverUploading(false)
+    }
+  }
+
+  /** AI 生成封面：调用 gpt-image-2，成功后直接设为封面 */
+  async function handleCoverGenerate() {
+    if (!coverPrompt.trim() || coverGenerating) return
+    setCoverGenerating(true)
+    setMessage(null)
+    try {
+      const response = await fetch('/api/admin/generate-cover', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: coverPrompt.trim(), slug, referencePaths: coverRefs }),
+      })
+      const data = await response.json()
+      if (!response.ok) throw new Error(data.error || '生成失败')
+      updateItem({ image: data.path })
+      setMessage('封面已生成并设为当前封面，满意后记得保存。')
+    } catch (error) {
+      setMessage(`封面生成失败：${error instanceof Error ? error.message : '未知错误'}`)
+    } finally {
+      setCoverGenerating(false)
+    }
+  }
+
+  function toggleCoverRef(src: string) {
+    setCoverRefs((current) => (current.includes(src) ? current.filter((s) => s !== src) : [...current, src]))
+  }
 
   function updateItem(partial: Partial<WorkItem>) {
     setItem((current) => (current ? { ...current, ...partial } : current))
@@ -448,6 +515,140 @@ export default function AdminWorkEditPage() {
           className="text-[26px] font-extrabold leading-[1.35] tracking-tight text-text-primary sm:text-[32px]"
           placeholder="输入项目标题"
         />
+
+        {/* 封面编辑区：独立上传 / 从项目配图选择 / 清除 */}
+        <div className="mt-12 rounded-2xl border border-stroke p-5">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <p className="shrink-0 text-[13px] font-semibold text-text-primary">项目封面（首页列表展示）</p>
+            <div className="flex flex-wrap items-center gap-4">
+              <button
+                type="button"
+                onClick={() => coverInputRef.current?.click()}
+                disabled={coverUploading}
+                className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap text-[13px] font-semibold text-muted transition-colors hover:text-text-primary disabled:opacity-50"
+              >
+                {coverUploading ? <Loader2 size={14} className="animate-spin" /> : <Camera size={14} strokeWidth={2} />}
+                上传封面
+              </button>
+              <button
+                type="button"
+                onClick={() => setCoverPickerOpen((open) => !open)}
+                className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap text-[13px] font-semibold text-muted transition-colors hover:text-text-primary"
+              >
+                <Images size={14} strokeWidth={2} /> 从配图选择
+              </button>
+              <button
+                type="button"
+                onClick={() => setCoverAiOpen((open) => !open)}
+                className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap text-[13px] font-semibold text-muted transition-colors hover:text-text-primary"
+              >
+                <Sparkles size={14} strokeWidth={2} /> AI 生成
+              </button>
+              {item.image && (
+                <button
+                  type="button"
+                  onClick={() => updateItem({ image: '' })}
+                  className="shrink-0 whitespace-nowrap text-[13px] font-semibold text-red-500 transition-colors hover:text-red-600"
+                >
+                  清除
+                </button>
+              )}
+            </div>
+          </div>
+
+          <div className="mt-4">
+            {item.image ? (
+              isVideoSrc(item.image) ? (
+                <video src={item.image} autoPlay loop muted playsInline className="h-40 rounded-xl bg-surface object-cover" />
+              ) : (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={item.image} alt="封面预览" className="h-40 rounded-xl bg-surface object-cover" />
+              )
+            ) : (
+              <p className="flex h-24 items-center justify-center rounded-xl bg-surface text-[12px] text-muted">未设置封面</p>
+            )}
+          </div>
+
+          {coverPickerOpen && (
+            <div className="mt-4 grid grid-cols-4 gap-3 sm:grid-cols-6">
+              {projectMedia.map((src) => (
+                <button
+                  key={src}
+                  type="button"
+                  onClick={() => {
+                    updateItem({ image: src })
+                    setCoverPickerOpen(false)
+                  }}
+                  className={`overflow-hidden rounded-xl transition-shadow ${item.image === src ? 'ring-2 ring-text-primary ring-offset-2 ring-offset-bg' : 'hover:ring-2 hover:ring-black/15 hover:ring-offset-2 hover:ring-offset-bg'}`}
+                >
+                  {isVideoSrc(src) ? (
+                    <video src={src} muted playsInline preload="metadata" className="aspect-video w-full bg-surface object-cover" />
+                  ) : (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={src} alt="" loading="lazy" className="aspect-video w-full bg-surface object-cover" />
+                  )}
+                </button>
+              ))}
+              {projectMedia.length === 0 && (
+                <p className="col-span-full py-4 text-center text-[12px] text-muted">详情页还没有配图，先在正文里上传图片或视频。</p>
+              )}
+            </div>
+          )}
+
+          <input
+            ref={coverInputRef}
+            type="file"
+            accept="image/*,video/mp4,video/webm,video/quicktime"
+            className="hidden"
+            onChange={handleCoverFileChange}
+          />
+
+          {coverAiOpen && (
+            <div className="mt-4 rounded-xl bg-surface p-4">
+              <textarea
+                value={coverPrompt}
+                onChange={(event) => setCoverPrompt(event.target.value)}
+                rows={3}
+                placeholder="描述想要的封面，例如：浅米色背景上，一部 iPhone 展示外卖首页的界面截图，极简构图，柔和自然光，高品质产品摄影感"
+                className="w-full resize-none rounded-lg border border-stroke bg-bg px-3 py-2 text-[13px] leading-relaxed text-text-primary placeholder:text-muted/70"
+              />
+
+              {projectMedia.filter((src) => !isVideoSrc(src)).length > 0 && (
+                <div className="mt-3">
+                  <p className="mb-2 text-[12px] font-semibold text-muted">参考图（可选，结合项目配图生成，点击勾选）</p>
+                  <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
+                    {projectMedia
+                      .filter((src) => !isVideoSrc(src))
+                      .map((src) => (
+                        <button
+                          key={src}
+                          type="button"
+                          onClick={() => toggleCoverRef(src)}
+                          className={`overflow-hidden rounded-lg transition-shadow ${coverRefs.includes(src) ? 'ring-2 ring-text-primary ring-offset-2 ring-offset-surface' : 'opacity-70 hover:opacity-100'}`}
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={src} alt="" loading="lazy" className="aspect-video w-full bg-bg object-cover" />
+                        </button>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                <p className="text-[11px] text-muted">gpt-image-2 · 高质量 · 横版 3:2，生成约需 30–60 秒，成功后自动设为封面</p>
+                <button
+                  type="button"
+                  onClick={handleCoverGenerate}
+                  disabled={coverGenerating || !coverPrompt.trim()}
+                  className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full bg-text-primary px-4 py-1.5 text-[13px] font-semibold text-bg transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {coverGenerating ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} strokeWidth={2} />}
+                  {coverGenerating ? '生成中…' : '生成封面'}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
 
         <div className="pt-2 sm:pt-4">
           {blocks.map((block, index) => (
