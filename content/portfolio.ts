@@ -307,7 +307,6 @@ export const workItems: WorkItem[] = [
     hidden: true,
   },
   {
-    // 结算与履约体验升级 · KM 源文档（金筷子奖申报）：https://km.sankuai.com/collabpage/2054163474
     slug: 'checkout-order-experience',
     title: {
       en: 'Checkout & Order Experience',
@@ -359,12 +358,6 @@ export const workItems: WorkItem[] = [
           src: '/assets/work/checkout-order/strategy-architecture.png',
         },
         {
-          id: 'architecture-video',
-          type: 'image',
-          layout: 'wide',
-          src: '/assets/work/checkout-order/checkout-halfsheet-demo.mp4',
-        },
-        {
           id: 'transparency-title',
           type: 'heading',
           content: {
@@ -385,12 +378,6 @@ export const workItems: WorkItem[] = [
           type: 'image',
           layout: 'wide',
           src: '/assets/work/checkout-order/strategy-transparency.png',
-        },
-        {
-          id: 'transparency-video',
-          type: 'image',
-          layout: 'wide',
-          src: '/assets/work/checkout-order/order-progress-demo.mp4',
         },
         {
           id: 'flow-title',
