@@ -788,6 +788,12 @@ export const workItems: WorkItem[] = [
           },
         },
         {
+          id: 'cb61d6c7-7eb8-445c-906b-9d7046662959',
+          type: 'image',
+          layout: 'wide',
+          src: '/assets/work/waimai-second-floor/1793845881154.mp4',
+        },
+        {
           id: 'question-title',
           type: 'heading',
           content: {
