@@ -944,6 +944,235 @@ export const workItems: WorkItem[] = [
     hidden: true,
   },
   {
+    slug: 'waimai-store-upgrade',
+    title: {
+      en: 'Store Page Upgrade',
+      zh: '店铺页升级',
+    },
+    tagline: {
+      en: 'One template had served every merchant for years. We split it into three tiers of storefront capability — so every store can present itself in its own voice.',
+      zh: '一套模板服务了所有商家很多年。我们把它拆成三档装修能力，让每家店都能以自己的样子见人。',
+    },
+    span: 'md:col-span-12',
+    aspect: 'h-[340px] sm:h-[380px] md:h-[430px] lg:h-[520px]',
+    image: '/assets/work/waimai-store-upgrade/result-five-versions.png',
+    detail: {
+      blocks: [
+        {
+          id: 'context',
+          type: 'text',
+          content: {
+            en: 'The store page is one of the oldest surfaces in the app. Brand header, menu list, item detail — a single template has served every storefront, and years of iteration touched only the styling, never the skeleton. The problems hold for all three parties at once: users enter a store and cannot tell what kind of place it is, what its signature dishes are, whether to trust it; merchants want brand presence but have no room to express it, and their operational skills vary wildly; on the platform side, the unified template guarantees efficiency and a floor on experience, at the cost of every store looking alike. The real bottleneck is the word "unified" itself — every local optimization is just another patch on it.',
+            zh: '外卖店铺页是美团里最老的一批页面。头部品牌区、菜单列表、商品详情，一套模板服务所有门店，几年下来改动的都是局部样式，骨架没有动过。问题在三个角色身上同时成立：用户进店后看不清这是一家什么样的店，招牌菜是什么，值不值得信任；商家想要品牌感却没有表达空间，装修能力又参差不齐；平台这一侧，统一模板保住了效率和体验下限，代价是页面长得越来越像。真正的症结出在「统一」这两个字上，任何局部优化都在给它打补丁。',
+          },
+        },
+        {
+          id: 'img-hero',
+          type: 'image',
+          layout: 'wide',
+          src: '/assets/work/waimai-store-upgrade/result-five-versions.png',
+        },
+        {
+          id: 'strategy-title',
+          type: 'heading',
+          content: {
+            en: 'Strategy: Start from How Merchants Differ',
+            zh: '策略：从商家的差异出发',
+          },
+        },
+        {
+          id: 'strategy-1',
+          type: 'text',
+          content: {
+            en: 'The obvious move is to redesign one better-looking template. Research pointed somewhere else: the relationship between merchants and the platform varies enormously. High-end brands like Da Dong have their own private channels and dine-in business; delivery is a supplement, and their willingness to invest is low. Starbucks wants a consistent experience across the platform, yet many of its brand operations cannot be carried by the platform. Merchants like Jiayibing depend on delivery orders and care deeply about online operations, but lack the ability to build a good storefront. Food-court stalls run small businesses and barely care about storefront decoration at all. One template is a constraint for the first group and an indulgence for the third.',
+            zh: '最容易想到的做法，是重做一套更好看的模板。调研的结论把我们引向了另一个方向：商家和平台的关系差别巨大。大董这类头部品牌有自己的私域和堂食阵地，外卖只是补充，上线意愿不高；星巴克希望全平台体验统一，但很多运营手段平台承接不了；甲乙饼这类商家依赖外卖订单、重视线上经营，却没有能力把店铺做好；美食城档口小本买卖，对线上装修基本无感。同一套模板，对第一类是约束，对第三类是放任。',
+          },
+        },
+        {
+          id: 'img-strategy',
+          type: 'image',
+          layout: 'wide',
+          src: '/assets/work/waimai-store-upgrade/strategy-map.png',
+        },
+        {
+          id: 'strategy-2',
+          type: 'text',
+          content: {
+            en: 'So the strategy shifted from "rebuild one" to "split into three": the Basic tier solves for information efficiency, the Quality tier for decision confidence, and the Premium tier for brand expression. The tiers are drawn along two axes — operational capability and asset quality. Once both were mapped, the tiers stopped being a ranking of good versus poor; each became the right form for its own kind of merchant.',
+            zh: '于是策略从「重做一套」转向「分成三档」：基础版解决信息效率，品质版解决决策信心，尊享版解决品牌表达。分档的依据是商家的运营能力和素材水平，两样都摸底之后，档位之间不再是好与差的比较，而是各自的合理形态。',
+          },
+        },
+        {
+          id: 'research-title',
+          type: 'heading',
+          content: {
+            en: 'Research: No Direct Benchmark to Copy',
+            zh: '研究：没有可以直接对标的竞品',
+          },
+        },
+        {
+          id: 'research-1',
+          type: 'text',
+          content: {
+            en: 'The industry offered no ready answer. E-commerce storefront systems are mature, but their category logic is too far from food delivery; the best practices among delivery peers are isolated points that never add up to a method. We widened the lens instead — brand websites, mini programs, marketing materials, physical storefronts, printed menus, side by side — to extract what makes a brand feel credible and what forms of expression hold up across media, then translated those findings back into the language of the store page.',
+            zh: '行业里没有现成答案。电商的店铺装修体系成熟，但品类逻辑和餐饮差距太大；餐饮同行里做得好的多是单点，凑不成方法论。我们把研究范围撑开，把品牌官网、小程序、营销物料、线下门店、纸质菜单并排来看，从里面总结「什么样的品牌感是可信的、什么样的表达在别的媒介上成立」，再翻译回店铺页的语言。',
+          },
+        },
+        {
+          id: 'img-research',
+          type: 'image',
+          layout: 'wide',
+          src: '/assets/work/waimai-store-upgrade/industry-research.png',
+        },
+        {
+          id: 'research-2',
+          type: 'text',
+          content: {
+            en: 'A second critical input was the real state of merchant assets. Merchants fall into three bands by asset quality: ordinary merchants rely on stock images with weak quality and consistency; brand merchants produce high-quality assets and can handle many sizes and formats; large brand merchants go further with a stable visual system. This directly shaped how forgiving each tier had to be: the closer to the Basic tier, the more the design must survive abuse from low-quality assets.',
+            zh: '另一条关键输入是商家素材的真实水平。我们把商家按素材质量分成三层：普通商家多用网络图片，品质和一致性都弱；品牌商家素材质量高，能处理多种尺寸和类型；大型品牌商家进一步有稳定的视觉体系。这个认知直接决定了三档方案的宽容度设计：越往基础版走，方案越要经得起低质量素材的折腾。',
+          },
+        },
+        {
+          id: 'tiers-title',
+          type: 'heading',
+          content: {
+            en: 'Three Tiers',
+            zh: '三档方案',
+          },
+        },
+        {
+          id: 'tier-basic',
+          type: 'text',
+          content: {
+            en: 'The Basic tier serves the vast majority of merchants, and its design standard is the safety net: any storefront, however poor its assets or rough its operations, must look more presentable after adopting it than before. Concretely, basic information is regrouped and consolidated in a vertical layout that improves readability and screen efficiency; delivery mode and delivery time are merged into one line, deliberately pulling platform styling back so the store\'s own character can show. This iteration went through three stages — each validated against real merchants, then overturned — before settling into the restrained form of "information to information, platform to platform."',
+            zh: '基础版面向绝大多数商家，设计标准是「兜底」：任何一家素材再差、运营再粗放的门店，套用之后也必须比改造前体面。具体做法是把基础信息归类整合，改用上下布局提高易读性和屏幕效率；配送方式和配送时间融合呈现，主动削弱平台样式对店铺个性的干扰。这轮迭代走了三个阶段，每一阶段的方案都在真实商家数据上验证过再推翻，最终收敛到「信息归信息、平台归平台」的克制形态。',
+          },
+        },
+        {
+          id: 'img-basic',
+          type: 'image',
+          layout: 'wide',
+          src: '/assets/work/waimai-store-upgrade/basic-version.png',
+        },
+        {
+          id: 'tier-quality',
+          type: 'text',
+          content: {
+            en: 'The Quality tier serves mid-market merchants with real operational capability, adding visualization of decision information: achievements like ratings and rankings are consolidated and simplified, helping users compare stores against each other. The key judgment here was restraint. The earliest design gave achievement badges a strong colored treatment; in practice the styling overpowered the page and hurt its overall quality, so it converged back into a unified information layout. The Quality tier also carried the project\'s hardest technical problem, covered separately below.',
+            zh: '品质版面向有运营能力的中腰部商家，增加的是决策信息的可视化：评分、榜单这类成就型信息被整合简化，帮用户在门店之间建立对比。这里有一个关键判断是克制。最早的方案给成就信息加了彩色背景的强视觉，试下来样式过强，反而伤害了页面整体的品质，最终收敛为统一的信息布局。品质版还有一个技术上的硬骨头，放在后面单独讲。',
+          },
+        },
+        {
+          id: 'img-quality',
+          type: 'image',
+          layout: 'wide',
+          src: '/assets/work/waimai-store-upgrade/quality-version.png',
+        },
+        {
+          id: 'tier-premium',
+          type: 'text',
+          content: {
+            en: 'The Premium tier serves top brands, and its core is giving the brand a real space to speak: large brand imagery, a centered layout, and customizable textures and graphics, so that the quality of a physical storefront can travel online. Space allocation was the most contested part of the project — brand expression needs area, decision information needs area, and navigation must survive. The final trade-off: compress the header moderately, keep the tab bar always reachable, and turn textures and graphics into configurable slots. The brand presence stays whole, and commercial slots have somewhere to live.',
+            zh: '尊享版面向头部品牌，核心是给品牌一个真正的表达空间：大面积品牌宣传图、居中布局、底纹与图形的定制选项，让头部商家把线下门店的质感带到线上。空间分配是整个项目里最纠结的部分：品牌表达要面积，决策信息要面积，页面的可导航性也要保住。最终的取舍是适当压缩头部空间、保证 tab 常驻可调出，把底纹和图形做成可定制的位置。品牌感因此是完整的，商业化也有处可去。',
+          },
+        },
+        {
+          id: 'img-premium',
+          type: 'image',
+          layout: 'wide',
+          src: '/assets/work/waimai-store-upgrade/premium-version-plan.png',
+        },
+        {
+          id: 'img-compare',
+          type: 'image',
+          layout: 'wide',
+          src: '/assets/work/waimai-store-upgrade/three-tier-compare.png',
+        },
+        {
+          id: 'hardest-title',
+          type: 'heading',
+          content: {
+            en: 'The Two Hardest Problems',
+            zh: '攻坚：两个最硬的问题',
+          },
+        },
+        {
+          id: 'hardest-color',
+          type: 'text',
+          content: {
+            en: 'Color extraction for the Quality-tier header. The header follows the brand\'s color, but merchant logos and storefront photos vary wildly in quality, and automatic extraction breaks easily — with little industry practice to lean on. We built a color guide: extract the dominant color from the logo, set safe ranges for saturation and brightness, and downgrade unusable assets to a neutral treatment. The deliverable looks like one page of spec; behind it sits group after group of testing against real merchant logos.',
+            zh: '品质版的头部取色。品质版头部要跟随品牌色，但商家的 logo 和门头照片质量参差，自动取色很容易翻车，行业内可以直接参考的做法也很少。我们做了一套取色指南：从 logo 提取主色，对饱和度和明度设安全区间，对不可用的素材降级为中性色处理。产出看起来只是一页规范，背后是大量真实商家 logo 的逐组测试。',
+          },
+        },
+        {
+          id: 'hardest-premium',
+          type: 'text',
+          content: {
+            en: 'Where does the Premium tier\'s sense of quality come from? Stage one used a centered layout with large brand imagery — the quality landed, but it demanded too much from merchant assets and the results were uncontrollable. Stage two shrank the promotional slots and tried more controllable expressions like theme colors and logo textures, only to squeeze commercial space too hard. Stage three found the compromise: compress the header, keep the tab bar reachable, and open up configurable texture and graphic slots. Across all three stages, the tug-of-war never changed — quality on one end, controllability on the other.',
+            zh: '尊享版的品质感从哪来。第一阶段用居中布局加大面积品牌图，质感立得住，但对素材质量要求过高，效果不可控；第二阶段收缩宣传坑位，尝试主题色、logo 纹理这类更可控的品牌表达，又发现把商业化空间压得太紧；第三阶段才找到折中：压缩头部空间、保证 tab 调出、增加底纹和图形定制位。三个阶段来回拉锯的，始终是品质感和可控性这两头。',
+          },
+        },
+        {
+          id: 'menu-title',
+          type: 'heading',
+          content: {
+            en: 'Menus by Category',
+            zh: '分品类菜单',
+          },
+        },
+        {
+          id: 'menu-1',
+          type: 'text',
+          content: {
+            en: 'The menu is another module bruised by the unified template. A bubble-tea menu runs on variants, temperatures and seasonal launches; a fast-food menu runs on combos and add-ons. Forced into one template, both end up awkward. We designed menu templates by category: bubble tea highlights seasonal freshness and recommendation copy, dumplings highlight signature items and filling families, pizza highlights flavor comparison. The templates change nothing about how merchants operate their back office — they simply preset a more sensible information structure per category, letting the menu return to its offline role: helping a guest order a proper meal, quickly.',
+            zh: '菜单是另一个被「统一模板」伤到的模块。奶茶店的菜单逻辑是多规格、多温度、季节上新，快餐店是套餐和加料，硬塞进同一个模板，两边都别扭。我们按品类设计菜单模版：奶茶强调当季尝鲜和推荐语，饺子强调招牌和馅料家族，披萨强调口味对比。模版不改变商家后台的操作方式，只在对应品类下预置更合理的信息结构，让菜单回到它在线下的角色：帮客人快速点出一顿合适的饭。',
+          },
+        },
+        {
+          id: 'reflection-title',
+          type: 'heading',
+          content: {
+            en: 'Reflections',
+            zh: '认知沉淀',
+          },
+        },
+        {
+          id: 'reflection-1',
+          type: 'text',
+          content: {
+            en: 'When the supply on a platform is radically heterogeneous, "one optimal solution" is a false premise — tiering is the honest answer. The design work begins with a tiering strategy, and only then becomes tiered design.',
+            zh: '当平台的供给极度异质时，「一套最优解」是伪命题，分级是最诚实的答案。设计要做的先是分层的策略，然后才是分层的设计。',
+          },
+        },
+        {
+          id: 'reflection-2',
+          type: 'text',
+          content: {
+            en: 'The safety net is harder to design than the flagship. The flagship can ask merchants to keep up; the Basic tier must assume the worst assets, the least operations — and still look presentable.',
+            zh: '兜底方案比旗舰方案更难设计。旗舰版可以要求商家配合，基础版必须假设最差的素材、最少的运营，还要体面。',
+          },
+        },
+        {
+          id: 'reflection-3',
+          type: 'text',
+          content: {
+            en: 'A sense of quality has different sources. In the Quality tier it comes from the credibility of objective platform data; in the Premium tier it comes from the brand\'s own assets. Design\'s job is to give each its right source — one decorative language cannot cover both.',
+            zh: '品质感有不同来源。品质版的品质来自平台客观数据的信用，尊享版的品质来自品牌自己的素材。设计的职责是给两种品质感各自安排对来源，一套装饰语言覆盖不了两者。',
+          },
+        },
+        {
+          id: 'reflection-4',
+          type: 'text',
+          content: {
+            en: 'Unglamorous engineering problems — color extraction, asset compatibility — decide whether a design actually ships. Spec-type deliverables look plain, yet they are often the only bridge between a proposal and a launch.',
+            zh: '取色、兼容这类不起眼的工程问题，决定方案能不能真正落地。规范类产出看着平淡，往往是方案与上线之间唯一的桥。',
+          },
+        },
+      ],
+    },
+    hidden: true,
+  },
+  {
     slug: 'urban-interface-space',
     title: {
       en: 'Urban Interface Space',
