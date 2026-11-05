@@ -407,13 +407,13 @@ export const workItems: WorkItem[] = [
           id: 'output-01',
           type: 'image',
           layout: 'wide',
-          src: '/assets/work/checkout-order/effect-1.png',
+          src: '/assets/work/checkout-order-experience/1793874717999.png',
         },
         {
           id: 'output-02',
           type: 'image',
           layout: 'wide',
-          src: '/assets/work/checkout-order/effect-2.png',
+          src: '/assets/work/checkout-order-experience/1793874726873.png',
         },
         {
           id: 'output-04',
