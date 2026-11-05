@@ -307,6 +307,7 @@ export const workItems: WorkItem[] = [
     hidden: true,
   },
   {
+    // 结算与履约体验升级 · KM 源文档（金筷子奖申报）：https://km.sankuai.com/collabpage/2054163474
     slug: 'checkout-order-experience',
     title: {
       en: 'Checkout & Order Experience',
@@ -325,8 +326,8 @@ export const workItems: WorkItem[] = [
           id: 'context',
           type: 'text',
           content: {
-            en: 'The checkout and order tracking pages are critical touchpoints in the core transaction flow of a large-scale food delivery platform. Over years of iteration, the pages accumulated complex information hierarchies, inconsistent interaction patterns, and rising customer complaints. This project aimed to fundamentally reimagine both pages — simplifying structure, strengthening fulfillment transparency, and elevating the end-to-end transaction experience.',
-            zh: '结算页与订单详情页是大型即时配送平台交易主链路上的关键环节，经过长期迭代，页面积累了复杂的信息层级、不一致的交互模式和持续上升的客诉。本项目旨在从根本上重新设计这两个页面——简化结构、强化履约透明度、提升端到端的交易体验。',
+            en: 'The checkout page and the order detail page are the two heaviest surfaces in the food-delivery transaction flow: the underlying logic is complex, more than ten business teams compete for space on them, and years of iteration piled up tangled hierarchies, inconsistent styles and recurring complaints. The project started by defining the core problems through scenario analysis, a full heuristic audit, user research, card sorting and competitive analysis at home and abroad, then rebuilt both pages — simplifying structure, strengthening fulfillment transparency, and lifting the end-to-end transaction experience.',
+            zh: '结算页与订单详情页是外卖交易主链路上最重的两个页面：底层逻辑复杂，长期迭代叠加了十多个业务团队的流量诉求，页面积累了复杂的信息层级、不一致的交互样式和持续的客诉。项目从场景分析、现状问题走查、用户调研、卡片分类到国内外竞品分析，先定义出核心问题，再对两个页面做整体重构——简化结构、强化履约透明度、提升端到端的交易体验。',
           },
         },
         {
@@ -347,8 +348,8 @@ export const workItems: WorkItem[] = [
           id: 'architecture-copy',
           type: 'text',
           content: {
-            en: 'Transformed the checkout from a full-page takeover into a lightweight half-sheet overlay, reducing perceived operational cost. Reordered information blocks based on user priority research and card-sorting analysis, consolidating scattered elements into a streamlined flow that balances user needs with business requirements from multiple stakeholder teams.',
-            zh: '将结算页从全屏独立页面改造为轻量半屏浮窗，降低用户操作感知成本。基于用户优先级调研和卡片分类分析重新排列信息模块，将分散的元素整合为简洁流程，在满足多个业务方需求的同时兼顾用户体验。',
+            en: 'The checkout moved from a full-page takeover to a lightweight half-sheet overlay, cutting the perceived cost of the operation. Information modules were re-ordered through card-sorting analysis and differentiated across pre-payment, payment, post-payment and fulfillment scenarios, bringing what users actually care about at each moment to the front. The overall structure rebalances the demands of ten-plus business teams against the user experience.',
+            zh: '将结算页从全屏独立页面改造为轻量半屏浮窗，降低用户的操作感知成本。基于卡片分类分析重新排列信息模块，并按支付前、支付中、支付后与履约的不同场景区分信息，把每个环节用户真正关心的内容前置。整体信息结构在十多个业务团队的诉求与用户体验之间重新找到平衡。',
           },
         },
         {
@@ -356,6 +357,12 @@ export const workItems: WorkItem[] = [
           type: 'image',
           layout: 'wide',
           src: '/assets/work/checkout-order/strategy-architecture.png',
+        },
+        {
+          id: 'architecture-video',
+          type: 'image',
+          layout: 'wide',
+          src: '/assets/work/checkout-order/checkout-halfsheet-demo.mp4',
         },
         {
           id: 'transparency-title',
@@ -369,8 +376,8 @@ export const workItems: WorkItem[] = [
           id: 'transparency-copy',
           type: 'text',
           content: {
-            en: 'Conducted a full-state audit of the order tracking page, redefining display priorities for delivery status. Added progress nodes to give users a sense of control over the delivery process. Refined status copy and escalation visibility to proactively manage user expectations and resolve pain points that previously generated complaints.',
-            zh: '对订单追踪页进行全状态盘点，重新定义配送状态的展示优先级。新增履约进度节点，让用户对配送流程有更强的掌控感。优化状态文案和异常提醒可见性，主动管理用户预期，解决此前产生客诉的痛点。',
+            en: 'Order detail involves an enormous number of states, and complaints often traced back to state priority. The rider-arrival status used to outrank the merchant preparation status — when a merchant was slow to prepare, the page kept showing that the rider was already waiting, and users directed their frustration at the rider, escalating the conflict. We audited every state, redefined the display priorities of fulfillment information, and refined status copy; then raised the visibility of abnormal reminders to manage expectations, and added delivery progress nodes to strengthen the sense of control over the process and ease the anxiety of waiting.',
+            zh: '订单详情的状态逻辑极多，客诉往往出在状态优先级上：骑手到店取餐的状态原本优先于商家出餐展示，商家久未出餐时，页面一直显示骑手已到店，用户把火气撒向骑手，反而激化矛盾。项目对全部状态做了盘点，重新定义履约信息的展示优先级并细化状态与文案表达；再通过提升异常提醒的可见性管理用户预期，新增履约进度节点强化对配送过程的掌控感，缓解等待焦虑。',
           },
         },
         {
@@ -378,6 +385,12 @@ export const workItems: WorkItem[] = [
           type: 'image',
           layout: 'wide',
           src: '/assets/work/checkout-order/strategy-transparency.png',
+        },
+        {
+          id: 'transparency-video',
+          type: 'image',
+          layout: 'wide',
+          src: '/assets/work/checkout-order/order-progress-demo.mp4',
         },
         {
           id: 'flow-title',
@@ -428,120 +441,39 @@ export const workItems: WorkItem[] = [
           src: '/assets/work/checkout-order/effect-5.png',
         },
         {
-          id: 'result-title',
+          id: 'reflection-title',
           type: 'heading',
           content: {
-            en: 'Results',
-            zh: '项目成果',
+            en: 'Reflections',
+            zh: '认知沉淀',
           },
         },
         {
-          id: 'result-copy',
+          id: 'reflection-1',
           type: 'text',
           content: {
-            en: 'Customer complaint rate decreased by -n%; checkout conversion increased by +npp; and order completion improved by +npp.',
-            zh: '客诉率降低 -n%，结算转化率提升 +npp，完单率提升 +npp。',
+            en: 'The core of transaction-flow design is expectation management. A sense of control comes from honest, predictable information — put what users care about at each moment first, and the anxiety falls away on its own.',
+            zh: '交易链路设计的核心是预期管理。掌控感来自信息的诚实与可预期：每个环节把用户真正关心的内容前置，焦虑自然下降。',
           },
         },
         {
-          id: 'summary-title',
-          type: 'heading',
-          content: {
-            en: 'Reflection',
-            zh: '总结',
-          },
-        },
-        {
-          id: 'summary-copy',
+          id: 'reflection-2',
           type: 'text',
           content: {
-            en: 'By restructuring the page architecture, refining fulfillment communication, and streamlining information design, the project delivered measurable improvements in conversion, completion, and user satisfaction while maintaining alignment with 10+ business teams\' requirements.',
-            zh: '通过重构页面架构、优化履约信息传达和简化信息设计，项目在转化率、完单率和用户满意度上取得了可量化的提升，同时与 10+ 业务团队的需求保持一致。',
+            en: 'Ordering states by priority matters more than polishing copy. The rider-versus-merchant conflict shows that the first questions of communication are who speaks first and what gets said — how to say it comes second.',
+            zh: '状态的优先级排序比文案打磨更根本。骑手与商家的冲突场景说明：信息传达的第一性问题是谁先说、说什么，其次才是怎么说。',
+          },
+        },
+        {
+          id: 'reflection-3',
+          type: 'text',
+          content: {
+            en: 'Structural changes to a core flow always carry local costs. What matters is making those costs visible, attributable and reversible — absorbing them through continuous tuning rather than hiding from them in the design.',
+            zh: '主链路的结构调整必然带来局部代价。关键是让代价可见、可归因、可回调，用持续调优去消化它，而不是在方案里回避它。',
           },
         },
       ],
-      overview: {
-        en: 'The checkout and order tracking pages are critical touchpoints in the core transaction flow of a large-scale food delivery platform. Over years of iteration, the pages accumulated complex information hierarchies, inconsistent interaction patterns, and rising customer complaints. This project aimed to fundamentally reimagine both pages — simplifying structure, strengthening fulfillment transparency, and elevating the end-to-end transaction experience.',
-        zh: '结算页与订单详情页是大型即时配送平台交易主链路上的关键环节，经过长期迭代，页面积累了复杂的信息层级、不一致的交互模式和持续上升的客诉。本项目旨在从根本上重新设计这两个页面——简化结构、强化履约透明度、提升端到端的交易体验。',
-      },
-      role: {
-        en: 'Lead UX Designer — Responsible for interaction design, information architecture, cross-team coordination with 10+ business teams',
-        zh: '主设计师 — 负责交互设计、信息架构、与 10+ 业务团队的跨团队协调',
-      },
-      duration: {
-        en: 'Approx. 6 months (research to launch)',
-        zh: '约 6 个月（调研到上线）',
-      },
-      strategies: [
-        {
-          title: {
-            en: 'Restructure Page Architecture',
-            zh: '重构页面架构',
-          },
-          description: {
-            en: 'Transformed the checkout from a full-page takeover into a lightweight half-sheet overlay, reducing perceived operational cost. Reordered information blocks based on user priority research and card-sorting analysis, consolidating scattered elements into a streamlined flow that balances user needs with business requirements from multiple stakeholder teams.',
-            zh: '将结算页从全屏独立页面改造为轻量半屏浮窗，降低用户操作感知成本。基于用户优先级调研和卡片分类分析重新排列信息模块，将分散的元素整合为简洁流程，在满足多个业务方需求的同时兼顾用户体验。',
-          },
-          image: '/assets/work/checkout-order/strategy-architecture.png',
-        },
-        {
-          title: {
-            en: 'Enhance Fulfillment Transparency',
-            zh: '强化履约信息透传',
-          },
-          description: {
-            en: 'Conducted a full-state audit of the order tracking page, redefining display priorities for delivery status. Added progress nodes to give users a sense of control over the delivery process. Refined status copy and escalation visibility to proactively manage user expectations and resolve pain points that previously generated complaints.',
-            zh: '对订单追踪页进行全状态盘点，重新定义配送状态的展示优先级。新增履约进度节点，让用户对配送流程有更强的掌控感。优化状态文案和异常提醒可见性，主动管理用户预期，解决此前产生客诉的痛点。',
-          },
-          image: '/assets/work/checkout-order/strategy-transparency.png',
-        },
-        {
-          title: {
-            en: 'Streamline Information Flow',
-            zh: '整合信息动线',
-          },
-          description: {
-            en: 'Unified inconsistent element styles, eliminated redundant visual layers, and standardized the reading flow across both pages. Redefined display rules to group related fields, simplify controls, and ensure edge cases render correctly — improving overall information acquisition efficiency.',
-            zh: '统一不一致的元素样式，消除冗余视觉层级，规范两个页面的阅读动线。重新定义展示规则以分组关联字段、简化控件，并确保边界场景正确渲染——整体提升信息获取效率。',
-          },
-        },
-      ],
-      outcomes: [
-        {
-          metric: '-n%',
-          label: {
-            en: 'Customer complaint rate reduction',
-            zh: '客诉率降低',
-          },
-        },
-        {
-          metric: '+npp',
-          label: {
-            en: 'Checkout conversion uplift',
-            zh: '结算转化率提升',
-          },
-        },
-        {
-          metric: '+npp',
-          label: {
-            en: 'Order completion rate improvement',
-            zh: '完单率提升',
-          },
-        },
-      ],
-      effectImages: [
-        '/assets/work/checkout-order/effect-1.png',
-        '/assets/work/checkout-order/effect-2.png',
-        '/assets/work/checkout-order/effect-3.png',
-        '/assets/work/checkout-order/effect-4.png',
-        '/assets/work/checkout-order/effect-5.png',
-      ],
-      summary: {
-        en: 'By restructuring the page architecture, refining fulfillment communication, and streamlining information design, the project delivered measurable improvements in conversion, completion, and user satisfaction while maintaining alignment with 10+ business teams\' requirements.',
-        zh: '通过重构页面架构、优化履约信息传达和简化信息设计，项目在转化率、完单率和用户满意度上取得了可量化的提升，同时与 10+ 业务团队的需求保持一致。',
-      },
     },
-    hidden: true,
   },
   {
     slug: 'waimai-homepage-traffic',
@@ -754,7 +686,6 @@ export const workItems: WorkItem[] = [
         },
       ],
     },
-    hidden: true,
   },
   {
     slug: 'waimai-second-floor',
@@ -1170,7 +1101,6 @@ export const workItems: WorkItem[] = [
         },
       ],
     },
-    hidden: true,
   },
   {
     slug: 'urban-interface-space',

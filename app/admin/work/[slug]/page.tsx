@@ -325,7 +325,7 @@ export default function AdminWorkEditPage() {
   function buildCoverPromptSuggestion(): string {
     const title = item?.title.zh || item?.title.en || ''
     const summary = blocks
-      .filter((block) => block.type === 'text')
+      .filter((block): block is Extract<WorkContentBlock, { type: 'heading' | 'text' }> => block.type !== 'image')
       .map((block) => (block.content.zh || block.content.en || '').trim())
       .find((text) => text.length > 0)
       ?.slice(0, 120)
