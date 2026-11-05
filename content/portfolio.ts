@@ -780,14 +780,12 @@ export const workItems: WorkItem[] = [
           },
         },
         {
-          id: '90c8ebad-b2e2-4122-a508-37bc6b82c284',
-          type: 'image',
-          layout: 'triple',
-          srcs: [
-            '/assets/work/waimai-second-floor/1793795605041.mp4',
-            '/assets/work/waimai-second-floor/1793795699293.mov',
-            '/assets/work/waimai-second-floor/1793795668800.mp4',
-          ],
+          id: 'question-1',
+          type: 'text',
+          content: {
+            en: 'The homepage cannot answer the question of growth. Every inch of its space already has an owner; adding a new business means squeezing out an old one, and that equation has no solution. The way out lies beyond the homepage.',
+            zh: '首页无法回答增长的问题。它的每一寸空间都有明确的归属，塞进新业务就要挤掉旧业务，这个方程无解。出路在首页之外。',
+          },
         },
         {
           id: 'question-title',
@@ -795,14 +793,6 @@ export const workItems: WorkItem[] = [
           content: {
             en: 'Where Does Growth Space Come From',
             zh: '命题：增量空间从哪里来',
-          },
-        },
-        {
-          id: 'question-1',
-          type: 'text',
-          content: {
-            en: 'The homepage cannot answer the question of growth. Every inch of its space already has an owner; adding a new business means squeezing out an old one, and that equation has no solution. The way out lies beyond the homepage.',
-            zh: '首页无法回答增长的问题。它的每一寸空间都有明确的归属，塞进新业务就要挤掉旧业务，这个方程无解。出路在首页之外。',
           },
         },
         {
@@ -892,6 +882,16 @@ export const workItems: WorkItem[] = [
             en: 'Once the experience was set, complexity was distilled into capability: every motion node was fully defined through real-device joint debugging, and the entry was templated — a business configures one slot and one color to get a custom design. The second floor went from a piece of work to a production line that keeps running.',
             zh: '体验定型之后，复杂被沉淀为能力：动效节点经真机联调被完整定义，入口模板化，业务配置一个资源位、一个颜色，就能得到一套定制设计。二楼从一件作品，变成了一条可持续运转的生产线。',
           },
+        },
+        {
+          id: '90c8ebad-b2e2-4122-a508-37bc6b82c284',
+          type: 'image',
+          layout: 'triple',
+          srcs: [
+            '/assets/work/waimai-second-floor/1793795605041.mp4',
+            '/assets/work/waimai-second-floor/1793795699293.mov',
+            '/assets/work/waimai-second-floor/1793795668800.mp4',
+          ],
         },
         {
           id: 'reflection-title',
