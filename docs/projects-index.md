@@ -16,6 +16,9 @@
 | 3 | Urban Interface Space | `urban-interface-space` | — | 讨论中 | 仅有列表条目，无详情页 |
 | 4 | User Perspective Research | `user-perspective-research` | — | 讨论中 | 仅有列表条目，无详情页 |
 | 5 | Brand Experience Identity | `brand-experience-identity` | — | 讨论中 | 仅有列表条目，无详情页 |
+| 6 | 外卖首页流量分发架构演进 | `waimai-homepage-traffic` | [2795749920](https://km.sankuai.com/collabpage/2795749920) | 已沉淀（已录本地站） | Wiki + 本地 portfolio.ts 双向就绪（hidden: true，发布时放开）；图片已入库（before-after / list-modes / showcase-framework）；无数据叙事；自取 tab 不写入；商品模式降级为小案例；二楼为独立项目不在此展开 |
+| 7 | 外卖二楼：新空间探索 | `waimai-second-floor` | [2097225222](https://km.sankuai.com/collabpage/2097225222) | 已录本地站（不沉淀 Wiki） | 范围：白领二楼 + 校园二楼（下拉二楼形态）；校园新首页不写；角色归属不写；新电梯类动线（双橱窗/底tab等）融合进项目 #6；文案已录 portfolio.ts（hidden: true，hero 图为空待补）；素材以视频为主整理中，到位后补 video block（手势红包、袋鼠 IP 两处动态素材位已在条目 TODO 注释标记） |
+| 8 | 店铺升级改造 | `store-upgrade` | [2102811414](https://km.sankuai.com/collabpage/2102811414) | 讨论中 | 用户下一个要整理的项目；KM 文档含 BC 双视角整合、动力引擎奖申报素材；待新会话梳理后沉淀 |
 
 ## 规则
 
