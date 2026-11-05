@@ -321,6 +321,26 @@ export default function AdminWorkEditPage() {
     }
   }
 
+  /** 基于项目标题与正文，生成一段封面描述建议，供用户确认或修改 */
+  function buildCoverPromptSuggestion(): string {
+    const title = item?.title.zh || item?.title.en || ''
+    const summary = blocks
+      .filter((block) => block.type === 'text')
+      .map((block) => (block.content.zh || block.content.en || '').trim())
+      .find((text) => text.length > 0)
+      ?.slice(0, 120)
+    const subject = summary ? `${title}。${summary}` : title
+    return `为作品集项目「${subject}」设计一张封面图。要求：极简构图，浅色干净背景，大面积留白，视觉焦点集中，高品质设计感，横版构图，画面中不要出现任何文字。`
+  }
+
+  /** 打开 AI 生成面板：首次打开且未填写时，自动预填内容建议 */
+  function toggleCoverAiPanel() {
+    setCoverAiOpen((open) => {
+      if (!open && !coverPrompt.trim()) setCoverPrompt(buildCoverPromptSuggestion())
+      return !open
+    })
+  }
+
   /** AI 生成封面：调用 gpt-image-2，成功后直接设为封面 */
   async function handleCoverGenerate() {
     if (!coverPrompt.trim() || coverGenerating) return
@@ -539,7 +559,7 @@ export default function AdminWorkEditPage() {
               </button>
               <button
                 type="button"
-                onClick={() => setCoverAiOpen((open) => !open)}
+                onClick={toggleCoverAiPanel}
                 className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap text-[13px] font-semibold text-muted transition-colors hover:text-text-primary"
               >
                 <Sparkles size={14} strokeWidth={2} /> AI 生成
