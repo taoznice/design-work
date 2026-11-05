@@ -355,7 +355,7 @@ export default function AdminWorkEditPage() {
       const data = await response.json()
       if (!response.ok) throw new Error(data.error || '生成失败')
       updateItem({ image: data.path })
-      setMessage('封面已生成并设为当前封面，满意后记得保存。')
+      setMessage(`封面已生成（${data.model || 'AIGC'}）并设为当前封面，满意后记得保存。`)
     } catch (error) {
       setMessage(`封面生成失败：${error instanceof Error ? error.message : '未知错误'}`)
     } finally {
@@ -655,7 +655,7 @@ export default function AdminWorkEditPage() {
               )}
 
               <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
-                <p className="text-[11px] text-muted">gpt-image-2 · 高质量 · 横版 3:2，生成约需 30–60 秒，成功后自动设为封面</p>
+                <p className="text-[11px] text-muted">AIGC 生图 · 高质量 · 横版 3:2，生成约需 30–60 秒，成功后自动设为封面</p>
                 <button
                   type="button"
                   onClick={handleCoverGenerate}

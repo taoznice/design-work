@@ -4,13 +4,14 @@ import path from 'path'
 
 /**
  * AI 封面生成 API
- * 调用美团 AIGC gpt-image-2：无参考图走 /generations（文生图），有参考图走 /edits（JSON + raw base64，不支持 multipart）
+ * 调用美团 AIGC 生图接口：无参考图走 /generations（文生图），有参考图走 /edits（JSON + raw base64，不支持 multipart）
  * 生成结果保存到 public/assets/work/[slug]/，返回可直接使用的站点路径
  * 鉴权使用用户自己的 AIGC_API_KEY（.env.local），Key 不进入代码库
+ * 模型默认 gpt-image-1.5（gpt-image-2 需要单独的 AppId 配额），可用 AIGC_IMAGE_MODEL 覆盖
  */
 
 const AIGC_BASE = 'https://aigc.sankuai.com/v1/openai/native/images'
-const MODEL = 'gpt-image-2'
+const MODEL = process.env.AIGC_IMAGE_MODEL || 'gpt-image-1.5'
 const ALLOWED_SIZES = ['1024x1024', '1536x1024', '1024x1536']
 
 export async function POST(request: NextRequest) {
@@ -75,7 +76,7 @@ export async function POST(request: NextRequest) {
     const fileName = `cover-gen-${Date.now()}.png`
     writeFileSync(path.join(uploadDir, fileName), buffer)
 
-    return NextResponse.json({ success: true, path: `/assets/work/${slug}/${fileName}` })
+    return NextResponse.json({ success: true, path: `/assets/work/${slug}/${fileName}`, model: MODEL })
   } catch (error) {
     console.error('AI 封面生成失败:', error)
     return NextResponse.json({ error: error instanceof Error ? error.message : '生成失败' }, { status: 500 })
