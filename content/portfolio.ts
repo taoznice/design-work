@@ -955,7 +955,7 @@ export const workItems: WorkItem[] = [
     },
     span: 'md:col-span-12',
     aspect: 'h-[340px] sm:h-[380px] md:h-[430px] lg:h-[520px]',
-    image: '/assets/work/waimai-store-upgrade/result-five-versions.png',
+    image: '/assets/work/waimai-store-upgrade/1793868878449.png',
     detail: {
       blocks: [
         {
@@ -1041,6 +1041,12 @@ export const workItems: WorkItem[] = [
           },
         },
         {
+          id: 'img-premium',
+          type: 'image',
+          layout: 'wide',
+          src: '/assets/work/waimai-store-upgrade/premium-version-plan.png',
+        },
+        {
           id: 'tier-basic',
           type: 'text',
           content: {
@@ -1075,12 +1081,6 @@ export const workItems: WorkItem[] = [
             en: 'The Premium tier serves top brands, and its core is giving the brand a real space to speak: large brand imagery, a centered layout, and customizable textures and graphics, so that the quality of a physical storefront can travel online. Space allocation was the most contested part of the project — brand expression needs area, decision information needs area, and navigation must survive. The final trade-off: compress the header moderately, keep the tab bar always reachable, and turn textures and graphics into configurable slots. The brand presence stays whole, and commercial slots have somewhere to live.',
             zh: '尊享版面向头部品牌，核心是给品牌一个真正的表达空间：大面积品牌宣传图、居中布局、底纹与图形的定制选项，让头部商家把线下门店的质感带到线上。空间分配是整个项目里最纠结的部分：品牌表达要面积，决策信息要面积，页面的可导航性也要保住。最终的取舍是适当压缩头部空间、保证 tab 常驻可调出，把底纹和图形做成可定制的位置。品牌感因此是完整的，商业化也有处可去。',
           },
-        },
-        {
-          id: 'img-premium',
-          type: 'image',
-          layout: 'wide',
-          src: '/assets/work/waimai-store-upgrade/premium-version-plan.png',
         },
         {
           id: 'img-compare',
