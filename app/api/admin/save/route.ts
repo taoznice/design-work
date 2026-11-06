@@ -248,6 +248,15 @@ async function commitAndPush() {
  */
 export async function POST(request: NextRequest) {
   try {
+    // CMS 需要写本地文件和 git 操作，只能在本地 dev server 使用；
+    // 线上（Vercel）文件系统只读，直接给出明确指引而不是报 ENOENT
+    if (process.env.VERCEL) {
+      return NextResponse.json(
+        { error: '线上站点不支持在 Admin 里保存。请在本地 localhost:3000/admin 编辑并保存，推送后线上会自动更新。' },
+        { status: 403 },
+      )
+    }
+
     const body = await request.json()
 
     if (!Array.isArray(body)) {

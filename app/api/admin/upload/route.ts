@@ -10,6 +10,14 @@ import path from 'path'
  */
 export async function POST(request: NextRequest) {
   try {
+    // 上传需要写本地 public/ 目录，仅本地 dev server 可用；线上直接给出明确指引
+    if (process.env.VERCEL) {
+      return NextResponse.json(
+        { error: '线上站点不支持上传素材。请在本地 localhost:3000/admin 操作，推送后线上会自动更新。' },
+        { status: 403 },
+      )
+    }
+
     const formData = await request.formData()
     const file = formData.get('file') as File | null
     const slug = formData.get('slug') as string | null
