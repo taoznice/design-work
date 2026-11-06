@@ -461,6 +461,7 @@ export const workItems: WorkItem[] = [
         },
       ],
     },
+    hidden: true,
   },
   {
     slug: 'waimai-homepage-traffic',
@@ -673,6 +674,7 @@ export const workItems: WorkItem[] = [
         },
       ],
     },
+    hidden: true,
   },
   {
     slug: 'waimai-second-floor',
@@ -1088,6 +1090,7 @@ export const workItems: WorkItem[] = [
         },
       ],
     },
+    hidden: true,
   },
   {
     slug: 'urban-interface-space',
