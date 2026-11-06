@@ -1,6 +1,6 @@
 'use client'
 
-import { ArrowDown, ArrowLeft, ArrowUp, Camera, GripVertical, Images, Loader2, Plus, Save, Sparkles, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowLeft, ArrowUp, Camera, Check, GripVertical, Images, Loader2, Plus, Save, Sparkles, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
@@ -88,18 +88,33 @@ function InlineEdit({
   )
 }
 
+/** 视频容器背景色预设（空值 = 默认 surface 灰） */
+const VIDEO_BG_PRESETS = [
+  { label: '默认灰', value: '' },
+  { label: '纯白', value: '#FFFFFF' },
+  { label: '暖米', value: '#F5EFE6' },
+  { label: '深灰', value: '#262626' },
+  { label: '纯黑', value: '#000000' },
+]
+
 function ImageSlot({
   src,
   slug,
   onUpdate,
   label = '替换图片',
   className = '',
+  mediaClassName = '',
+  mediaBgClass = 'bg-surface',
 }: {
   src: string
   slug: string
   onUpdate: (path: string) => void
   label?: string
   className?: string
+  /** 追加到内部 img/video 上的类名（用于窄版视频预览等场景） */
+  mediaClassName?: string
+  /** 媒体元素的兜底背景类，默认 surface 灰；窄版视频容器自带背景时传空 */
+  mediaBgClass?: string
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
@@ -126,9 +141,9 @@ function ImageSlot({
     <div className={`group/image relative overflow-hidden border border-transparent transition-colors hover:border-black/20 focus-within:border-black/20 ${className}`}>
       {src ? (
         isVideoSrc(src) ? (
-          <video src={src} autoPlay loop muted playsInline className="block h-auto w-full bg-surface object-contain" />
+          <video src={src} autoPlay loop muted playsInline className={`block h-auto w-full object-contain ${mediaBgClass} ${mediaClassName}`} />
         ) : (
-          <img src={src} alt="" className="block h-auto w-full bg-surface object-contain" />
+          <img src={src} alt="" className={`block h-auto w-full object-contain ${mediaBgClass} ${mediaClassName}`} />
         )
       ) : (
         <button
@@ -399,6 +414,13 @@ export default function AdminWorkEditPage() {
   function updateWideImage(index: number, src: string) {
     updateBlocks((current) => current.map((block, blockIndex) => (
       blockIndex === index && block.type === 'image' && block.layout === 'wide' ? { ...block, src } : block
+    )))
+  }
+
+  /** 更新 wide 块的视频展示设置（撑满 / 背景色） */
+  function updateWideVideo(index: number, partial: { videoFill?: boolean; videoBg?: string }) {
+    updateBlocks((current) => current.map((block, blockIndex) => (
+      blockIndex === index && block.type === 'image' && block.layout === 'wide' ? { ...block, ...partial } : block
     )))
   }
 
@@ -713,13 +735,74 @@ export default function AdminWorkEditPage() {
               )}
 
               {block.type === 'image' && block.layout === 'wide' && (
-                <ImageSlot
-                  src={block.src}
-                  slug={slug}
-                  onUpdate={(src) => updateWideImage(index, src)}
-                  className="mt-10 rounded-[20px] sm:mt-14"
-                  label="替换横图"
-                />
+                <div className="mt-10 sm:mt-14">
+                  {isVideoSrc(block.src) && !block.videoFill ? (
+                    <div className="flex justify-center">
+                      <div
+                        className={`aspect-[9/16] w-[calc((100%-1.5rem)/3)] overflow-hidden rounded-2xl sm:w-[calc((100%-2.5rem)/3)] ${block.videoBg ? '' : 'bg-surface'}`}
+                        style={block.videoBg ? { backgroundColor: block.videoBg } : undefined}
+                      >
+                        <ImageSlot
+                          src={block.src}
+                          slug={slug}
+                          onUpdate={(src) => updateWideImage(index, src)}
+                          className="h-full"
+                          mediaClassName="h-full"
+                          mediaBgClass=""
+                          label="替换视频"
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <ImageSlot
+                      src={block.src}
+                      slug={slug}
+                      onUpdate={(src) => updateWideImage(index, src)}
+                      className="rounded-[20px]"
+                      label={isVideoSrc(block.src) ? '替换视频' : '替换横图'}
+                    />
+                  )}
+
+                  {isVideoSrc(block.src) && (
+                    <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2">
+                      <button
+                        type="button"
+                        onClick={() => updateWideVideo(index, { videoFill: !block.videoFill })}
+                        className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-muted transition-colors hover:text-text-primary"
+                      >
+                        <span className={`flex h-3.5 w-3.5 items-center justify-center rounded-[4px] border transition-colors ${block.videoFill ? 'border-text-primary bg-text-primary text-bg' : 'border-muted/60'}`}>
+                          {block.videoFill && <Check size={11} strokeWidth={2.5} />}
+                        </span>
+                        撑满整行
+                      </button>
+                      {!block.videoFill && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-[12px] font-semibold text-muted">背景</span>
+                          {VIDEO_BG_PRESETS.map((preset) => {
+                            const active = (block.videoBg || '') === preset.value
+                            return (
+                              <button
+                                key={preset.label}
+                                type="button"
+                                title={preset.label}
+                                onClick={() => updateWideVideo(index, { videoBg: preset.value || undefined })}
+                                className={`h-5 w-5 rounded-full border transition-transform ${preset.value ? '' : 'bg-surface'} ${active ? 'scale-110 border-transparent ring-2 ring-text-primary ring-offset-2 ring-offset-bg' : 'border-stroke hover:scale-105'}`}
+                                style={preset.value ? { backgroundColor: preset.value } : undefined}
+                              />
+                            )
+                          })}
+                          <input
+                            type="color"
+                            value={block.videoBg || '#F5F4F0'}
+                            onChange={(event) => updateWideVideo(index, { videoBg: event.target.value })}
+                            className="h-5 w-8 cursor-pointer rounded border border-stroke bg-transparent"
+                            title="自定义背景色"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
               )}
 
               {block.type === 'image' && block.layout === 'triple' && (

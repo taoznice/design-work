@@ -45,13 +45,33 @@ function ContentBlock({ block, language }: { block: WorkContentBlock; language: 
   if (block.type !== 'image') return null
 
   if (block.layout === 'wide') {
+    if (isVideoSrc(block.src)) {
+      // 撑满整行：与横图一致的全宽展示
+      if (block.videoFill) {
+        return (
+          <figure className="pt-10 sm:pt-14">
+            <video src={block.src} autoPlay loop muted playsInline className="block w-full rounded-[20px] bg-surface" />
+          </figure>
+        )
+      }
+      // 默认：按三图布局单张宽度居中展示，容器背景色可选
+      return (
+        <figure className="flex justify-center pt-10 sm:pt-14">
+          <video
+            src={block.src}
+            autoPlay
+            loop
+            muted
+            playsInline
+            style={block.videoBg ? { backgroundColor: block.videoBg } : undefined}
+            className={`aspect-[9/16] w-[calc((100%-1.5rem)/3)] rounded-2xl object-contain sm:w-[calc((100%-2.5rem)/3)] ${block.videoBg ? '' : 'bg-surface'}`}
+          />
+        </figure>
+      )
+    }
     return (
       <figure className="pt-10 sm:pt-14">
-        {isVideoSrc(block.src) ? (
-          <video src={block.src} autoPlay loop muted playsInline className="block w-full rounded-[20px] bg-surface" />
-        ) : (
-          <img src={block.src} alt="" loading="lazy" className="block w-full rounded-[20px] bg-surface" />
-        )}
+        <img src={block.src} alt="" loading="lazy" className="block w-full rounded-[20px] bg-surface" />
       </figure>
     )
   }

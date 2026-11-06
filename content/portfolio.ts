@@ -139,6 +139,10 @@ export type WorkContentBlock =
       type: 'image'
       layout: 'wide'
       src: string
+      /** 视频展示：true=撑满整行；false/缺省=按三图布局单张宽度居中展示 */
+      videoFill?: boolean
+      /** 视频不撑满时容器的背景色（CSS 颜色值，缺省为默认灰） */
+      videoBg?: string
     }
   | {
       id: string
