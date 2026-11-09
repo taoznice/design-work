@@ -726,6 +726,7 @@ export const workItems: WorkItem[] = [
           type: 'image',
           layout: 'wide',
           src: '/assets/work/waimai-second-floor/1793845881154.mp4',
+          videoFill: true,
         },
         {
           id: 'question-title',
