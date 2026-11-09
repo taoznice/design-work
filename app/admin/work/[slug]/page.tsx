@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import { workItems, type Language, type LocalizedText, type MediaCrop, type WorkContentBlock, type WorkItem } from '@/content/portfolio'
+import { CroppedMedia } from '@/components/CroppedMedia'
 import { isVideoSrc } from '@/lib/media'
 
 function createId() {
@@ -116,21 +117,11 @@ function ImageSlot({
   mediaClassName?: string
   /** 媒体元素的兜底背景类，默认 surface 灰；窄版视频容器自带背景时传空 */
   mediaBgClass?: string
-  /** 显示区域裁剪：传入后按裁剪区域渲染媒体（与前台详情页一致） */
+  /** 显示区域裁剪：传入后按裁剪区域渲染媒体（与前台详情页一致，不会变形） */
   crop?: MediaCrop | null
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
-
-  const cropMediaStyle: React.CSSProperties | undefined = crop
-    ? {
-        position: 'absolute',
-        left: `${(-crop.x / crop.w) * 100}%`,
-        top: `${(-crop.y / crop.h) * 100}%`,
-        width: `${100 / crop.w}%`,
-        height: `${100 / crop.h}%`,
-      }
-    : undefined
 
   async function upload(file: File) {
     setUploading(true)
@@ -151,27 +142,24 @@ function ImageSlot({
   }
 
   return (
-    <div
-      className={`group/image relative overflow-hidden border border-transparent transition-colors hover:border-black/20 focus-within:border-black/20 ${className}`}
-      style={crop ? { aspectRatio: `${crop.w} / ${crop.h}` } : undefined}
-    >
+    <div className={`group/image relative overflow-hidden border border-transparent transition-colors hover:border-black/20 focus-within:border-black/20 ${className}`}>
       {src ? (
-        isVideoSrc(src) ? (
+        crop ? (
+          <CroppedMedia src={src} crop={crop} />
+        ) : isVideoSrc(src) ? (
           <video
             src={src}
             autoPlay
             loop
             muted
             playsInline
-            style={crop ? cropMediaStyle : undefined}
-            className={crop ? 'max-w-none' : `block h-auto w-full object-contain ${mediaBgClass} ${mediaClassName}`}
+            className={`block h-auto w-full object-contain ${mediaBgClass} ${mediaClassName}`}
           />
         ) : (
           <img
             src={src}
             alt=""
-            style={crop ? cropMediaStyle : undefined}
-            className={crop ? 'max-w-none' : `block h-auto w-full object-contain ${mediaBgClass} ${mediaClassName}`}
+            className={`block h-auto w-full object-contain ${mediaBgClass} ${mediaClassName}`}
           />
         )
       ) : (
@@ -599,11 +587,33 @@ export default function AdminWorkEditPage() {
     )))
   }
 
-  /** 更新 wide 块的展示设置（视频撑满 / 背景色 / 显示裁剪） */
-  function updateWideVideo(index: number, partial: { videoFill?: boolean; videoBg?: string; crop?: MediaCrop }) {
+  /** 更新 wide 块的展示设置（视频撑满 / 背景色 / 显示裁剪 / 裁剪圆角） */
+  function updateWideVideo(index: number, partial: { videoFill?: boolean; videoBg?: string; crop?: MediaCrop; cropRounded?: boolean }) {
     updateBlocks((current) => current.map((block, blockIndex) => (
       blockIndex === index && block.type === 'image' && block.layout === 'wide' ? { ...block, ...partial } : block
     )))
+  }
+
+  /** 把从 index 开始连续的单张横图块（最多 3 个）合并为一个三图并排块 */
+  function mergeWideIntoTriple(index: number) {
+    updateBlocks((current) => {
+      const picked: string[] = []
+      let end = index
+      while (end < current.length && picked.length < 3) {
+        const candidate = current[end]
+        if (candidate.type !== 'image' || candidate.layout !== 'wide') break
+        picked.push(candidate.src)
+        end += 1
+      }
+      if (picked.length < 2) return current
+      const merged: WorkContentBlock = {
+        id: current[index].id,
+        type: 'image',
+        layout: 'triple',
+        srcs: [picked[0] || '', picked[1] || '', picked[2] || ''],
+      }
+      return [...current.slice(0, index), merged, ...current.slice(end)]
+    })
   }
 
   function updateTripleImage(index: number, imageIndex: number, src: string) {
@@ -929,25 +939,32 @@ export default function AdminWorkEditPage() {
                       onCancel={() => setCropEditingIndex(null)}
                     />
                   ) : isVideoSrc(block.src) && !block.videoFill ? (
-                    <div className="flex justify-center">
-                      <div
-                        className={`w-[calc((100%-1.5rem)/3)] overflow-hidden rounded-2xl sm:w-[calc((100%-2.5rem)/3)] ${block.crop ? '' : 'aspect-[9/16]'} ${block.videoBg ? '' : 'bg-surface'}`}
-                        style={{
-                          ...(block.crop ? { aspectRatio: `${block.crop.w} / ${block.crop.h}` } : {}),
-                          ...(block.videoBg ? { backgroundColor: block.videoBg } : {}),
-                        }}
-                      >
+                    <div
+                      className={`flex justify-center rounded-[20px] py-10 sm:py-14 ${block.videoBg ? '' : 'bg-surface'}`}
+                      style={block.videoBg ? { backgroundColor: block.videoBg } : undefined}
+                    >
+                      {block.crop ? (
                         <ImageSlot
                           src={block.src}
                           slug={slug}
                           onUpdate={(src) => updateWideImage(index, src)}
-                          className={block.crop ? '' : 'h-full'}
-                          mediaClassName={block.crop ? '' : 'h-full'}
-                          mediaBgClass=""
+                          className={`w-[calc((100%-1.5rem)/3)] sm:w-[calc((100%-2.5rem)/3)] ${block.cropRounded === false ? '' : 'rounded-2xl'}`}
                           label="替换视频"
-                          crop={block.crop ?? null}
+                          crop={block.crop}
                         />
-                      </div>
+                      ) : (
+                        <div className="aspect-[9/16] w-[calc((100%-1.5rem)/3)] sm:w-[calc((100%-2.5rem)/3)]">
+                          <ImageSlot
+                            src={block.src}
+                            slug={slug}
+                            onUpdate={(src) => updateWideImage(index, src)}
+                            className="h-full rounded-2xl"
+                            mediaClassName="h-full"
+                            mediaBgClass=""
+                            label="替换视频"
+                          />
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <ImageSlot
@@ -962,6 +979,19 @@ export default function AdminWorkEditPage() {
 
                   {cropEditingIndex !== index && block.src && (
                     <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2">
+                      {(() => {
+                        const next = blocks[index + 1]
+                        return next && next.type === 'image' && next.layout === 'wide' && next.src
+                      })() && (
+                        <button
+                          type="button"
+                          onClick={() => mergeWideIntoTriple(index)}
+                          className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-muted transition-colors hover:text-text-primary"
+                        >
+                          <Images size={12} strokeWidth={2} />
+                          合并为并排三图
+                        </button>
+                      )}
                       <button
                         type="button"
                         onClick={() => setCropEditingIndex(index)}
@@ -970,6 +1000,18 @@ export default function AdminWorkEditPage() {
                         <Crop size={12} strokeWidth={2} />
                         {block.crop ? '重新裁剪' : '裁剪显示区域'}
                       </button>
+                      {block.crop && (
+                        <button
+                          type="button"
+                          onClick={() => updateWideVideo(index, { cropRounded: block.cropRounded === false })}
+                          className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-muted transition-colors hover:text-text-primary"
+                        >
+                          <span className={`flex h-3.5 w-3.5 items-center justify-center rounded-[4px] border transition-colors ${block.cropRounded === false ? 'border-muted/60' : 'border-text-primary bg-text-primary text-bg'}`}>
+                            {block.cropRounded !== false && <Check size={11} strokeWidth={2.5} />}
+                          </span>
+                          圆角
+                        </button>
+                      )}
                       {block.crop && (
                         <button
                           type="button"

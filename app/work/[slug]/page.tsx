@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { notFound, useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { workItems, type Language, type WorkContentBlock } from '@/content/portfolio'
+import { CroppedMedia } from '@/components/CroppedMedia'
 import { isVideoSrc } from '@/lib/media'
 
 function LanguageSwitch({ language, setLanguage }: { language: Language; setLanguage: (language: Language) => void }) {
@@ -45,17 +46,8 @@ function ContentBlock({ block, language }: { block: WorkContentBlock; language: 
   if (block.type !== 'image') return null
 
   if (block.layout === 'wide') {
-    // 显示裁剪：容器按裁剪区域的比例裁切，媒体放大平移只露出框选部分，素材文件不变
     const crop = block.crop
-    const cropMediaStyle: React.CSSProperties | undefined = crop
-      ? {
-          position: 'absolute',
-          left: `${(-crop.x / crop.w) * 100}%`,
-          top: `${(-crop.y / crop.h) * 100}%`,
-          width: `${100 / crop.w}%`,
-          height: `${100 / crop.h}%`,
-        }
-      : undefined
+    const cropRoundedClass = block.cropRounded === false ? '' : 'rounded-[20px]'
 
     if (isVideoSrc(block.src)) {
       // 撑满整行：与横图一致的全宽展示
@@ -63,34 +55,36 @@ function ContentBlock({ block, language }: { block: WorkContentBlock; language: 
         return (
           <figure className="pt-10 sm:pt-14">
             {crop ? (
-              <div className="relative w-full overflow-hidden rounded-[20px]" style={{ aspectRatio: `${crop.w} / ${crop.h}` }}>
-                <video src={block.src} autoPlay loop muted playsInline style={cropMediaStyle} className="max-w-none" />
-              </div>
+              <CroppedMedia src={block.src} crop={crop} className={cropRoundedClass} />
             ) : (
               <video src={block.src} autoPlay loop muted playsInline className="block w-full rounded-[20px] bg-surface" />
             )}
           </figure>
         )
       }
-      // 默认：按三图布局单张宽度居中展示，容器背景色可选
+      // 默认：背景色带铺满整行内容宽度，视频按三图布局单张宽度居中
       return (
-        <figure className="flex justify-center pt-10 sm:pt-14">
+        <figure className="pt-10 sm:pt-14">
           <div
-            className={`relative w-[calc((100%-1.5rem)/3)] overflow-hidden rounded-2xl sm:w-[calc((100%-2.5rem)/3)] ${crop ? '' : 'aspect-[9/16]'} ${block.videoBg ? '' : 'bg-surface'}`}
-            style={{
-              ...(crop ? { aspectRatio: `${crop.w} / ${crop.h}` } : {}),
-              ...(block.videoBg ? { backgroundColor: block.videoBg } : {}),
-            }}
+            className={`flex justify-center rounded-[20px] py-10 sm:py-14 ${block.videoBg ? '' : 'bg-surface'}`}
+            style={block.videoBg ? { backgroundColor: block.videoBg } : undefined}
           >
-            <video
-              src={block.src}
-              autoPlay
-              loop
-              muted
-              playsInline
-              style={crop ? cropMediaStyle : undefined}
-              className={crop ? 'max-w-none' : 'h-full w-full object-contain'}
-            />
+            {crop ? (
+              <CroppedMedia
+                src={block.src}
+                crop={crop}
+                className={`w-[calc((100%-1.5rem)/3)] sm:w-[calc((100%-2.5rem)/3)] ${block.cropRounded === false ? '' : 'rounded-2xl'}`}
+              />
+            ) : (
+              <video
+                src={block.src}
+                autoPlay
+                loop
+                muted
+                playsInline
+                className="aspect-[9/16] w-[calc((100%-1.5rem)/3)] rounded-2xl object-contain sm:w-[calc((100%-2.5rem)/3)]"
+              />
+            )}
           </div>
         </figure>
       )
@@ -98,9 +92,7 @@ function ContentBlock({ block, language }: { block: WorkContentBlock; language: 
     if (crop) {
       return (
         <figure className="pt-10 sm:pt-14">
-          <div className="relative w-full overflow-hidden rounded-[20px]" style={{ aspectRatio: `${crop.w} / ${crop.h}` }}>
-            <img src={block.src} alt="" loading="lazy" style={cropMediaStyle} className="max-w-none" />
-          </div>
+          <CroppedMedia src={block.src} crop={crop} className={cropRoundedClass} />
         </figure>
       )
     }
