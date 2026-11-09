@@ -32,6 +32,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: '不支持的文件类型，仅支持 PNG/JPEG/WebP/GIF/MP4/WebM/MOV' }, { status: 400 })
     }
 
+    // 素材会进 git 仓库推送 GitHub，单文件 100MB 会被拒绝；留 5MB 余量提前拦截，避免保存后推不上去
+    const MAX_SIZE = 95 * 1024 * 1024
+    if (file.size > MAX_SIZE) {
+      const sizeMB = (file.size / 1024 / 1024).toFixed(1)
+      return NextResponse.json(
+        { error: `文件 ${sizeMB}MB 超过 95MB 上限（素材需推送 GitHub，单文件硬限制 100MB）。视频请先压缩后再上传。` },
+        { status: 400 },
+      )
+    }
+
     // 生成文件名：时间戳 + 原始扩展名
     const ext = file.name.split('.').pop() || 'png'
     const fileName = `${Date.now()}.${ext}`
