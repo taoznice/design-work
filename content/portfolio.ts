@@ -1121,7 +1121,7 @@ export const workItems: WorkItem[] = [
     },
     span: 'md:col-span-12',
     aspect: 'h-[340px] sm:h-[380px] md:h-[430px] lg:h-[520px]',
-    image: '/assets/work/waimai-travel-map/more-cities.jpeg',
+    image: '/assets/work/waimai-travel-map/landmark-assets-2.0.png',
     detail: {
       blocks: [
         {
