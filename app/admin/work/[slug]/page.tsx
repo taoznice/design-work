@@ -1,6 +1,6 @@
 'use client'
 
-import { ArrowDown, ArrowLeft, ArrowUp, Camera, Check, Crop, GripVertical, Images, Loader2, Plus, Save, Sparkles, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowLeft, ArrowUp, Camera, Check, Crop, GripVertical, Images, Loader2, Plus, Save, Sparkles, Trash2, X } from 'lucide-react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
@@ -457,6 +457,7 @@ export default function AdminWorkEditPage() {
   const [coverRefs, setCoverRefs] = useState<string[]>([])
   const [coverGenerating, setCoverGenerating] = useState(false)
   const [cropEditingIndex, setCropEditingIndex] = useState<number | null>(null)
+  const [triplePicker, setTriplePicker] = useState<{ block: number; cell: number } | null>(null)
 
   useEffect(() => {
     if (sourceItem) setItem(JSON.parse(JSON.stringify(sourceItem)))
@@ -594,26 +595,22 @@ export default function AdminWorkEditPage() {
     )))
   }
 
-  /** 把从 index 开始连续的单张横图块（最多 3 个）合并为一个三图并排块 */
-  function mergeWideIntoTriple(index: number) {
-    updateBlocks((current) => {
-      const picked: string[] = []
-      let end = index
-      while (end < current.length && picked.length < 3) {
-        const candidate = current[end]
-        if (candidate.type !== 'image' || candidate.layout !== 'wide') break
-        picked.push(candidate.src)
-        end += 1
-      }
-      if (picked.length < 2) return current
-      const merged: WorkContentBlock = {
-        id: current[index].id,
-        type: 'image',
-        layout: 'triple',
-        srcs: [picked[0] || '', picked[1] || '', picked[2] || ''],
-      }
-      return [...current.slice(0, index), merged, ...current.slice(end)]
-    })
+  /** 单张横图块 → 三图并排块（原图进第一格，其余两格留空可补） */
+  function convertWideToTriple(index: number) {
+    updateBlocks((current) => current.map((block, blockIndex) => (
+      blockIndex === index && block.type === 'image' && block.layout === 'wide'
+        ? { id: block.id, type: 'image', layout: 'triple', srcs: [block.src, '', ''] }
+        : block
+    )))
+  }
+
+  /** 三图并排块 → 单张横图块（保留第一格非空的素材） */
+  function convertTripleToWide(index: number) {
+    updateBlocks((current) => current.map((block, blockIndex) => (
+      blockIndex === index && block.type === 'image' && block.layout === 'triple'
+        ? { id: block.id, type: 'image', layout: 'wide', src: block.srcs.find((src) => src) || '' }
+        : block
+    )))
   }
 
   function updateTripleImage(index: number, imageIndex: number, src: string) {
@@ -979,19 +976,14 @@ export default function AdminWorkEditPage() {
 
                   {cropEditingIndex !== index && block.src && (
                     <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2">
-                      {(() => {
-                        const next = blocks[index + 1]
-                        return next && next.type === 'image' && next.layout === 'wide' && next.src
-                      })() && (
-                        <button
-                          type="button"
-                          onClick={() => mergeWideIntoTriple(index)}
-                          className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-muted transition-colors hover:text-text-primary"
-                        >
-                          <Images size={12} strokeWidth={2} />
-                          合并为并排三图
-                        </button>
-                      )}
+                      <button
+                        type="button"
+                        onClick={() => convertWideToTriple(index)}
+                        className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-muted transition-colors hover:text-text-primary"
+                      >
+                        <Images size={12} strokeWidth={2} />
+                        转为三图并排
+                      </button>
                       <button
                         type="button"
                         onClick={() => setCropEditingIndex(index)}
@@ -1066,17 +1058,84 @@ export default function AdminWorkEditPage() {
               )}
 
               {block.type === 'image' && block.layout === 'triple' && (
-                <div className="mt-10 grid grid-cols-3 gap-3 sm:mt-14 sm:gap-5">
-                  {block.srcs.map((src, imageIndex) => (
-                    <ImageSlot
-                      key={imageIndex}
-                      src={src}
-                      slug={slug}
-                      onUpdate={(path) => updateTripleImage(index, imageIndex, path)}
-                      className="aspect-[9/16] rounded-2xl"
-                      label="替换竖图"
-                    />
-                  ))}
+                <div className="mt-10 sm:mt-14">
+                  <div className="grid grid-cols-3 gap-3 sm:gap-5">
+                    {block.srcs.map((src, imageIndex) => (
+                      <div
+                        key={imageIndex}
+                        className={triplePicker?.block === index && triplePicker.cell === imageIndex ? 'rounded-2xl ring-2 ring-text-primary ring-offset-2 ring-offset-bg' : ''}
+                      >
+                        <ImageSlot
+                          src={src}
+                          slug={slug}
+                          onUpdate={(path) => updateTripleImage(index, imageIndex, path)}
+                          className="aspect-[9/16] rounded-2xl"
+                          label={src ? '替换竖图' : '添加图片/视频'}
+                        />
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2">
+                    <button
+                      type="button"
+                      onClick={() => setTriplePicker(triplePicker?.block === index ? null : { block: index, cell: 0 })}
+                      className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-muted transition-colors hover:text-text-primary"
+                    >
+                      <Images size={12} strokeWidth={2} />
+                      从配图选择
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        convertTripleToWide(index)
+                        setTriplePicker(null)
+                      }}
+                      className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-muted transition-colors hover:text-text-primary"
+                    >
+                      <X size={12} strokeWidth={2} />
+                      改回单图
+                    </button>
+                  </div>
+
+                  {triplePicker?.block === index && (
+                    <div className="mt-3 rounded-xl bg-surface p-3">
+                      <div className="mb-2 flex items-center gap-2">
+                        <span className="text-[12px] font-semibold text-muted">填入</span>
+                        {[0, 1, 2].map((cellIndex) => (
+                          <button
+                            key={cellIndex}
+                            type="button"
+                            onClick={() => setTriplePicker({ block: index, cell: cellIndex })}
+                            className={`rounded-full px-2.5 py-0.5 text-[12px] font-semibold transition-colors ${triplePicker.cell === cellIndex ? 'bg-text-primary text-bg' : 'bg-bg text-muted hover:text-text-primary'}`}
+                          >
+                            第{cellIndex + 1}格
+                          </button>
+                        ))}
+                      </div>
+                      {projectMedia.length > 0 ? (
+                        <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
+                          {projectMedia.map((mediaSrc) => (
+                            <button
+                              key={mediaSrc}
+                              type="button"
+                              onClick={() => updateTripleImage(index, triplePicker.cell, mediaSrc)}
+                              className={`overflow-hidden rounded-lg transition-shadow ${block.srcs[triplePicker.cell] === mediaSrc ? 'ring-2 ring-text-primary ring-offset-2 ring-offset-surface' : 'hover:ring-1 hover:ring-muted/40 hover:ring-offset-2 hover:ring-offset-surface'}`}
+                            >
+                              {isVideoSrc(mediaSrc) ? (
+                                <video src={mediaSrc} muted playsInline preload="metadata" className="aspect-video w-full bg-bg object-cover" />
+                              ) : (
+                                // eslint-disable-next-line @next/next/no-img-element
+                                <img src={mediaSrc} alt="" loading="lazy" className="aspect-video w-full bg-bg object-cover" />
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="text-[12px] text-muted">这个项目还没有可选素材，先在上方内容块里上传图片/视频。</p>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </section>
