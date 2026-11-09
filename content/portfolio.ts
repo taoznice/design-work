@@ -479,7 +479,7 @@ export const workItems: WorkItem[] = [
     },
     span: 'md:col-span-12',
     aspect: 'h-[340px] sm:h-[380px] md:h-[430px] lg:h-[520px]',
-    image: '/assets/work/waimai-homepage-traffic/before-after.png',
+    image: '/assets/work/waimai-homepage-traffic/cover-gen-1794207771802.png',
     detail: {
       blocks: [
         {
