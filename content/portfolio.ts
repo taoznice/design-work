@@ -153,6 +153,8 @@ export type WorkContentBlock =
       videoBg?: string
       /** 显示区域裁剪：只展示框选的部分，素材本身不变 */
       crop?: MediaCrop
+      /** 裁剪后展示是否带圆角，缺省为 true */
+      cropRounded?: boolean
     }
   | {
       id: string
@@ -195,131 +197,6 @@ export interface WorkItem {
 }
 
 export const workItems: WorkItem[] = [
-  {
-    slug: 'waimai-desktop-widget',
-    title: {
-      en: 'Emotional Design for a Food-Delivery Widget',
-      zh: '外卖桌面小组件情感化设计',
-    },
-    tagline: {
-      en: 'Turning a home-screen utility entry into a daily companion — a scene-based content system and a cross-brand IP collaboration.',
-      zh: '把功能入口变成桌面上长期陪伴的「老朋友」——场景化内容矩阵与一次跨品牌 IP 联动。',
-    },
-    span: 'md:col-span-12',
-    aspect: 'h-[340px] sm:h-[380px] md:h-[430px] lg:h-[520px]',
-    image: '/assets/work/waimai-desktop-widget/hero.png',
-    detail: {
-      blocks: [
-        {
-          id: 'context',
-          type: 'text',
-          content: {
-            en: 'A home-screen widget is a true zero-level entry: it stays visible without the app ever being opened. For a high-frequency service like food delivery, the opportunity is bigger than a shortcut — it is a surface for long-running content. But research also flagged the risk: purely functional or promotional information fatigues quickly, and a fatigued widget gets deleted. The design question became: how can a marketing widget survive on the home screen through emotional content?',
-            zh: '桌面小组件是手机上的「0 级入口」——用户不打开 App，也能长期看到它。对于外卖这样高频刚需的业务，这个位置的机会不只是一个快捷跳转入口，更是一个可以长期运营内容的触点。但调研也指出了风险：如果展示的只是功能和利益信息，用户很容易视觉疲劳，最终把组件从桌面删掉。这个项目的核心命题因此变成——如何让一个营销属性的组件，靠情感化内容在用户的桌面上活下去。',
-          },
-        },
-        {
-          id: 'hero-image',
-          type: 'image',
-          layout: 'wide',
-          src: '/assets/work/waimai-desktop-widget/hero.png',
-        },
-        {
-          id: 'persona-title',
-          type: 'heading',
-          content: {
-            en: 'From shortcut to an old friend',
-            zh: '从快捷入口到「桌面上的老朋友」',
-          },
-        },
-        {
-          id: 'persona-copy',
-          type: 'text',
-          content: {
-            en: 'The design personifies the widget as a trendy, witty, living old friend. The kangaroo mascot is the protagonist of this small card: it has expressions, moods, and states, and it speaks in a caring, teasing, sometimes coquettish tone. The copy never shouts slogans or stacks incentives — it reads like a message from a friend: "A hard week deserves a good meal tonight." "Haven’t seen you in days — how about a bowl of noodles?" The widget shifts from an ad slot pushed onto the home screen into a character that checks in on you.',
-            zh: '设计上把组件人格化为一个「潮、有趣、有梗、有活人感的老朋友」。袋鼠 IP 是这张小卡片的主角：它有表情、有情绪、有状态，会用关心的、撒娇的、调侃的语气和你说话。文案不喊口号、不堆利益点，而是像朋友发来的消息——「辛苦了一周，今晚吃点好的」「4 天都没见，不如吃碗面」。组件由此从一个被推送到桌面的广告位，变成一个主动关心你的角色。',
-          },
-        },
-        {
-          id: 'matrix-title',
-          type: 'heading',
-          content: {
-            en: 'A content matrix that follows the day',
-            zh: '跟着用户的一天和情绪走的内容矩阵',
-          },
-        },
-        {
-          id: 'matrix-copy',
-          type: 'text',
-          content: {
-            en: 'The content system is built around scenes and emotions, growing into dozens of widget states: meal-time nudges, afternoon tea and late-night cravings by time of day; rain, snow, heatwave and typhoon care by weather; streak encouragement, win-back pleas for lapsed users, and unused-coupon reminders by behavior. Each state combines a scene illustration, a witty one-liner, and a soft incentive hook, so the widget says the right thing at the right moment — "The best thing about a rainy day is a steaming hot meal," or on a Friday night, "Late-night happiness starts with a coupon."',
-            zh: '内容体系围绕「场景 × 情绪」搭建，持续产出数十种组件状态：按时间，有饭点提醒、下午茶、深夜宵夜；按天气，有下雨、下雪、高温、台风天的应景关怀；按行为，有连续下单的鼓励、久未下单的撒娇式挽回、未使用红包的提醒。每一种状态都由「场景插画 + 一句有梗的文案 + 利益钩子」构成，让组件在正确的时间说正确的话——下雨天说「最美不是下雨天，是热腾腾的美食」，周五深夜说「深夜的快乐，从用个红包开始」。',
-          },
-        },
-        {
-          id: 'matrix-image',
-          type: 'image',
-          layout: 'wide',
-          src: '/assets/work/waimai-desktop-widget/content-matrix.png',
-        },
-        {
-          id: 'visual-title',
-          type: 'heading',
-          content: {
-            en: 'Visual language: pop, yet unmistakable',
-            zh: '视觉语言：一眼跳脱，一眼认得',
-          },
-        },
-        {
-          id: 'visual-copy',
-          type: 'text',
-          content: {
-            en: 'Each card uses a saturated gradient to match its mood — deep blue for late night, hot orange-red for heatwaves, pale blue for snow. The kangaroo fully acts out every scene: soaking in a noodle bowl, lying on the moon, wiping sweat, wrapped in a blanket. The coupon capsule recurs as a visual anchor that carries the incentive. Among a grid of app icons, the widget has to pop instantly while staying unmistakably on-brand.',
-            zh: '每张卡片用高饱和的渐变底色匹配情绪氛围——宵夜的深蓝、高温的橙红、雪天的浅蓝；袋鼠在每个场景里「入戏」：泡进面碗、躺在月亮上、热到扶额、裹进被子；红包则作为反复出现的视觉锚点，串联起利益信息。在桌面一众 App 图标之间，组件既要足够跳脱吸引目光，又要保持一眼可识别的品牌感。',
-          },
-        },
-        {
-          id: 'collab-title',
-          type: 'heading',
-          content: {
-            en: 'A cross-brand collaboration',
-            zh: '一次跨界联动',
-          },
-        },
-        {
-          id: 'collab-copy',
-          type: 'text',
-          content: {
-            en: 'The Duolingo collaboration pushed the emotional design into meme territory: Duo the owl and the kangaroo became an official pair — "one feeds your brain, the other feeds your stomach." The two mascots’ personalities collide on each card: Duo nags you to eat with its signature passive-aggressive temper while the kangaroo plays the caring one. Lines like "Not eating on time? Duo is upset" borrow Duolingo’s native meme culture, giving the widget content organic reach on social platforms.',
-            zh: '与多邻国的联动把情感化推向 meme 化：多儿 Duo 和袋鼠组成「一个管脑，一个管胃」的官方 CP。两个 IP 的性格在卡片上对撞——Duo 带着它标志性的傲娇小脾气催你吃饭，袋鼠在一旁贴心补位。「吃饭不积极，Duo 有小脾气」这类文案借多邻国自带的梗文化，让组件内容具备了在社交场自传播的潜力。',
-          },
-        },
-        {
-          id: 'collab-image',
-          type: 'image',
-          layout: 'wide',
-          src: '/assets/work/waimai-desktop-widget/duolingo-collab.png',
-        },
-        {
-          id: 'reflection-title',
-          type: 'heading',
-          content: {
-            en: 'Reflection',
-            zh: '设计思考',
-          },
-        },
-        {
-          id: 'reflection-copy',
-          type: 'text',
-          content: {
-            en: 'A widget lives by a simple rule: it stays on the home screen only if it is delightful to look at. In this project, emotional design is not decoration — it is the retention mechanism that turns an entry point into companionship. When content follows the rhythm, weather, and mood of the person holding the phone, every glance becomes less an impression and more a greeting.',
-            zh: '小组件有一个朴素的生存法则：好看、有趣，才会被留在桌面上。所以在这个项目里，情感化不是装饰，而是留存机制——它让组件从「入口」变成「陪伴」。当内容开始跟着用户的作息、天气和情绪走，每天解锁手机时的一眼，就不再是一次曝光，而是一次打招呼。',
-          },
-        },
-      ],
-    },
-    hidden: true,
-  },
   {
     slug: 'checkout-order-experience',
     title: {
@@ -684,6 +561,131 @@ export const workItems: WorkItem[] = [
           content: {
             en: 'Space given to new businesses must come with boundaries and exit mechanisms. The hard part of incremental exploration has never been whether to give, but how to give — and when to take back.',
             zh: '给新业务的空间必须有边界和退出机制。增量探索的难点从来在于怎么给、什么时候收回。',
+          },
+        },
+      ],
+    },
+    hidden: true,
+  },
+  {
+    slug: 'waimai-desktop-widget',
+    title: {
+      en: 'Emotional Design for a Food-Delivery Widget',
+      zh: '外卖桌面小组件情感化设计',
+    },
+    tagline: {
+      en: 'Turning a home-screen utility entry into a daily companion — a scene-based content system and a cross-brand IP collaboration.',
+      zh: '把功能入口变成桌面上长期陪伴的「老朋友」——场景化内容矩阵与一次跨品牌 IP 联动。',
+    },
+    span: 'md:col-span-12',
+    aspect: 'h-[340px] sm:h-[380px] md:h-[430px] lg:h-[520px]',
+    image: '/assets/work/waimai-desktop-widget/hero.png',
+    detail: {
+      blocks: [
+        {
+          id: 'context',
+          type: 'text',
+          content: {
+            en: 'A home-screen widget is a true zero-level entry: it stays visible without the app ever being opened. For a high-frequency service like food delivery, the opportunity is bigger than a shortcut — it is a surface for long-running content. But research also flagged the risk: purely functional or promotional information fatigues quickly, and a fatigued widget gets deleted. The design question became: how can a marketing widget survive on the home screen through emotional content?',
+            zh: '桌面小组件是手机上的「0 级入口」——用户不打开 App，也能长期看到它。对于外卖这样高频刚需的业务，这个位置的机会不只是一个快捷跳转入口，更是一个可以长期运营内容的触点。但调研也指出了风险：如果展示的只是功能和利益信息，用户很容易视觉疲劳，最终把组件从桌面删掉。这个项目的核心命题因此变成——如何让一个营销属性的组件，靠情感化内容在用户的桌面上活下去。',
+          },
+        },
+        {
+          id: 'hero-image',
+          type: 'image',
+          layout: 'wide',
+          src: '/assets/work/waimai-desktop-widget/hero.png',
+        },
+        {
+          id: 'persona-title',
+          type: 'heading',
+          content: {
+            en: 'From shortcut to an old friend',
+            zh: '从快捷入口到「桌面上的老朋友」',
+          },
+        },
+        {
+          id: 'persona-copy',
+          type: 'text',
+          content: {
+            en: 'The design personifies the widget as a trendy, witty, living old friend. The kangaroo mascot is the protagonist of this small card: it has expressions, moods, and states, and it speaks in a caring, teasing, sometimes coquettish tone. The copy never shouts slogans or stacks incentives — it reads like a message from a friend: "A hard week deserves a good meal tonight." "Haven’t seen you in days — how about a bowl of noodles?" The widget shifts from an ad slot pushed onto the home screen into a character that checks in on you.',
+            zh: '设计上把组件人格化为一个「潮、有趣、有梗、有活人感的老朋友」。袋鼠 IP 是这张小卡片的主角：它有表情、有情绪、有状态，会用关心的、撒娇的、调侃的语气和你说话。文案不喊口号、不堆利益点，而是像朋友发来的消息——「辛苦了一周，今晚吃点好的」「4 天都没见，不如吃碗面」。组件由此从一个被推送到桌面的广告位，变成一个主动关心你的角色。',
+          },
+        },
+        {
+          id: 'matrix-title',
+          type: 'heading',
+          content: {
+            en: 'A content matrix that follows the day',
+            zh: '跟着用户的一天和情绪走的内容矩阵',
+          },
+        },
+        {
+          id: 'matrix-copy',
+          type: 'text',
+          content: {
+            en: 'The content system is built around scenes and emotions, growing into dozens of widget states: meal-time nudges, afternoon tea and late-night cravings by time of day; rain, snow, heatwave and typhoon care by weather; streak encouragement, win-back pleas for lapsed users, and unused-coupon reminders by behavior. Each state combines a scene illustration, a witty one-liner, and a soft incentive hook, so the widget says the right thing at the right moment — "The best thing about a rainy day is a steaming hot meal," or on a Friday night, "Late-night happiness starts with a coupon."',
+            zh: '内容体系围绕「场景 × 情绪」搭建，持续产出数十种组件状态：按时间，有饭点提醒、下午茶、深夜宵夜；按天气，有下雨、下雪、高温、台风天的应景关怀；按行为，有连续下单的鼓励、久未下单的撒娇式挽回、未使用红包的提醒。每一种状态都由「场景插画 + 一句有梗的文案 + 利益钩子」构成，让组件在正确的时间说正确的话——下雨天说「最美不是下雨天，是热腾腾的美食」，周五深夜说「深夜的快乐，从用个红包开始」。',
+          },
+        },
+        {
+          id: 'matrix-image',
+          type: 'image',
+          layout: 'wide',
+          src: '/assets/work/waimai-desktop-widget/content-matrix.png',
+        },
+        {
+          id: 'visual-title',
+          type: 'heading',
+          content: {
+            en: 'Visual language: pop, yet unmistakable',
+            zh: '视觉语言：一眼跳脱，一眼认得',
+          },
+        },
+        {
+          id: 'visual-copy',
+          type: 'text',
+          content: {
+            en: 'Each card uses a saturated gradient to match its mood — deep blue for late night, hot orange-red for heatwaves, pale blue for snow. The kangaroo fully acts out every scene: soaking in a noodle bowl, lying on the moon, wiping sweat, wrapped in a blanket. The coupon capsule recurs as a visual anchor that carries the incentive. Among a grid of app icons, the widget has to pop instantly while staying unmistakably on-brand.',
+            zh: '每张卡片用高饱和的渐变底色匹配情绪氛围——宵夜的深蓝、高温的橙红、雪天的浅蓝；袋鼠在每个场景里「入戏」：泡进面碗、躺在月亮上、热到扶额、裹进被子；红包则作为反复出现的视觉锚点，串联起利益信息。在桌面一众 App 图标之间，组件既要足够跳脱吸引目光，又要保持一眼可识别的品牌感。',
+          },
+        },
+        {
+          id: 'collab-title',
+          type: 'heading',
+          content: {
+            en: 'A cross-brand collaboration',
+            zh: '一次跨界联动',
+          },
+        },
+        {
+          id: 'collab-copy',
+          type: 'text',
+          content: {
+            en: 'The Duolingo collaboration pushed the emotional design into meme territory: Duo the owl and the kangaroo became an official pair — "one feeds your brain, the other feeds your stomach." The two mascots’ personalities collide on each card: Duo nags you to eat with its signature passive-aggressive temper while the kangaroo plays the caring one. Lines like "Not eating on time? Duo is upset" borrow Duolingo’s native meme culture, giving the widget content organic reach on social platforms.',
+            zh: '与多邻国的联动把情感化推向 meme 化：多儿 Duo 和袋鼠组成「一个管脑，一个管胃」的官方 CP。两个 IP 的性格在卡片上对撞——Duo 带着它标志性的傲娇小脾气催你吃饭，袋鼠在一旁贴心补位。「吃饭不积极，Duo 有小脾气」这类文案借多邻国自带的梗文化，让组件内容具备了在社交场自传播的潜力。',
+          },
+        },
+        {
+          id: 'collab-image',
+          type: 'image',
+          layout: 'wide',
+          src: '/assets/work/waimai-desktop-widget/duolingo-collab.png',
+        },
+        {
+          id: 'reflection-title',
+          type: 'heading',
+          content: {
+            en: 'Reflection',
+            zh: '设计思考',
+          },
+        },
+        {
+          id: 'reflection-copy',
+          type: 'text',
+          content: {
+            en: 'A widget lives by a simple rule: it stays on the home screen only if it is delightful to look at. In this project, emotional design is not decoration — it is the retention mechanism that turns an entry point into companionship. When content follows the rhythm, weather, and mood of the person holding the phone, every glance becomes less an impression and more a greeting.',
+            zh: '小组件有一个朴素的生存法则：好看、有趣，才会被留在桌面上。所以在这个项目里，情感化不是装饰，而是留存机制——它让组件从「入口」变成「陪伴」。当内容开始跟着用户的作息、天气和情绪走，每天解锁手机时的一眼，就不再是一次曝光，而是一次打招呼。',
           },
         },
       ],
@@ -1101,6 +1103,247 @@ export const workItems: WorkItem[] = [
           content: {
             en: 'Unglamorous engineering problems — color extraction, asset compatibility — decide whether a design actually ships. Spec-type deliverables look plain, yet they are often the only bridge between a proposal and a launch.',
             zh: '取色、兼容这类不起眼的工程问题，决定方案能不能真正落地。规范类产出看着平淡，往往是方案与上线之间唯一的桥。',
+          },
+        },
+      ],
+    },
+    hidden: true,
+  },
+  {
+    slug: 'waimai-travel-map',
+    title: {
+      en: 'The Out-of-Town Food Map',
+      zh: '异地场景地图',
+    },
+    tagline: {
+      en: 'When users open the app in an unfamiliar city, the platform can do more than deliver food — city landmarks, a map-based store picker and locals\' recommendations help travelers eat a reassuring local meal.',
+      zh: '用户身在陌生城市时，外卖平台能做的不止送餐：用城市地标、地图选店和本地人的推荐，让异乡人放心吃一顿当地饭。',
+    },
+    span: 'md:col-span-12',
+    aspect: 'h-[340px] sm:h-[380px] md:h-[430px] lg:h-[520px]',
+    image: '/assets/work/waimai-travel-map/more-cities.jpeg',
+    detail: {
+      blocks: [
+        {
+          id: 'context',
+          type: 'text',
+          content: {
+            en: 'Every year, a huge number of users open the delivery app in a city they don\'t live in — business trips, vacations, going home for the holidays. The first phase of out-of-town atmosphere building landed positive results, but also exposed two structural problems: decision dimensions were too thin for users to trust unfamiliar merchants, and AOI-based supply limits left many scenarios unserved. This project moves the out-of-town experience forward with a food map, answering three progressive questions: how to make users realize the place 「has local character」, how to help them 「find it」 more easily, and how to make them believe it\'s 「the real thing」.',
+            zh: '每年有大量用户在陌生的城市打开外卖：出差、旅行、假期回家。一期异地氛围建设拿到了正向反馈，但也暴露出两个结构性问题：决策维度单一，用户对陌生商家信任不足；AOI 的供给限制，让很多场景承接不住需求。这个项目在此之上推进异地场景地图，回答三个递进的问题：怎么让用户意识到异地「有特色」，怎么让用户更容易「找特色」，怎么让用户相信眼前是「真特色」。',
+          },
+        },
+        {
+          id: 'img-overview',
+          type: 'image',
+          layout: 'wide',
+          src: '/assets/work/waimai-travel-map/overview.jpeg',
+        },
+        {
+          id: 's1-title',
+          type: 'heading',
+          content: {
+            en: 'Strategy One: Realize the Place Has Character',
+            zh: '策略一：让用户意识到「有特色」',
+          },
+        },
+        {
+          id: 's1-text',
+          type: 'text',
+          content: {
+            en: 'For each city we distilled its most recognizable visual symbols — the sandstone peaks of Zhangjiajie, Suzhou garden pavilions, the Chengdu panda, Harbin\'s ice castle — into 3D landmarks placed in the homepage welcome header, accompanied by ambient elements like birds and bamboo leaves that form an environmental motion system, with local dialect worked into dish copy. Before users pick anything, they already know they are not home. Landmarks change with the seasons: Harbin shows the ice world in winter and Saint Sophia Cathedral in summer. The transition into the map follows one continuous story — clouds part, the map surfaces, the location pin drops — helping users understand the shift in the shopping flow.',
+            zh: '每个城市提炼辨识度最高的视觉符号——张家界的石峰、苏州的园林亭台、成都的熊猫、哈尔滨的冰雪城堡——做成 3D 地标放进首页欢迎头图，配合飞鸟、竹叶这类氛围元素构成环境动态系统，菜品表达引入方言俚语。用户还没开始选，就已经知道自己不在家。特殊地标随季节变化：哈尔滨冬天是冰雪大世界，夏天换成圣索菲亚教堂。进入地图的转场用「云雾散开—地图浮现—定位落点」的连贯叙事完成，帮助用户理解选购动线的切换。',
+          },
+        },
+        {
+          id: 'img-city-xuancheng',
+          type: 'image',
+          layout: 'wide',
+          src: '/assets/work/waimai-travel-map/city-xuancheng.jpeg',
+        },
+        {
+          id: 'img-city-suzhou',
+          type: 'image',
+          layout: 'wide',
+          src: '/assets/work/waimai-travel-map/city-suzhou.jpeg',
+        },
+        {
+          id: 'img-city-chengdu',
+          type: 'image',
+          layout: 'wide',
+          src: '/assets/work/waimai-travel-map/city-chengdu.jpeg',
+        },
+        {
+          id: 'img-city-zhangjiajie',
+          type: 'image',
+          layout: 'wide',
+          src: '/assets/work/waimai-travel-map/city-zhangjiajie.jpeg',
+        },
+        {
+          id: 'img-city-beijing',
+          type: 'image',
+          layout: 'wide',
+          src: '/assets/work/waimai-travel-map/city-beijing.jpeg',
+        },
+        {
+          id: 'img-more-cities',
+          type: 'image',
+          layout: 'wide',
+          src: '/assets/work/waimai-travel-map/more-cities.jpeg',
+        },
+        {
+          id: 'vid-harbin',
+          type: 'image',
+          layout: 'wide',
+          videoFill: true,
+          src: '/assets/work/waimai-travel-map/harbin-season.mp4',
+        },
+        {
+          id: 'vid-entry-suzhou',
+          type: 'image',
+          layout: 'wide',
+          src: '/assets/work/waimai-travel-map/entry-suzhou.mp4',
+        },
+        {
+          id: 'vid-transition-to-map',
+          type: 'image',
+          layout: 'wide',
+          src: '/assets/work/waimai-travel-map/transition-to-map.mp4',
+        },
+        {
+          id: 'vid-transition-page',
+          type: 'image',
+          layout: 'wide',
+          videoBg: '#f0f8ec',
+          src: '/assets/work/waimai-travel-map/transition-page.mp4',
+        },
+        {
+          id: 's2-title',
+          type: 'heading',
+          content: {
+            en: 'Strategy Two: Find the Local Character',
+            zh: '策略二：让用户更容易「找特色」',
+          },
+        },
+        {
+          id: 's2-text',
+          type: 'text',
+          content: {
+            en: 'A new map-based store picker breaks through the LBS radius, and combined with city-wide delivery, expands supply coverage. Merchants return to their real geographic coordinates, so authenticity and immersion are established at the same time. Inside the map, shopping scenarios are subdivided: local specialties, ranked merchants, souvenirs, trendy restaurants — finding a taste mid-trip and picking gifts before the ride home each get a clear entry.',
+            zh: '新增地图选店模式，突破 LBS 的范围限制，结合全城送的履约能力把供给覆盖撑开；商家回到真实地理坐标上呈现，真实感和代入感同时成立。地图页内再做导购场景细分：本地特色、上榜商家、伴手礼、网红餐厅，旅行途中找味道、返程前挑手信，各自有明确入口。',
+          },
+        },
+        {
+          id: 's3-title',
+          type: 'heading',
+          content: {
+            en: 'Strategy Three: Believe It\'s the Real Thing',
+            zh: '策略三：让用户相信是「真特色」',
+          },
+        },
+        {
+          id: 's3-text',
+          type: 'text',
+          content: {
+            en: 'Signature dishes come with notes on ingredients, preparation, flavor and cultural background, easing the anxiety of unfamiliar tastes. 「Recommended by locals」 and various rankings are surfaced as authoritative endorsement, and merchant pages carry user-generated notes that mention the store, letting real diners complete the final layer of verification.',
+            zh: '特色菜品配上原料做法、口味特点和文化背景的说明，降低对陌生口味的不安；「本地人推荐」和各类榜单前置成权威背书；商家页直接挂出提及本店的 UGC 笔记，用真实消费者的体验帮用户完成最后一层验证。',
+          },
+        },
+        {
+          id: 's23-link',
+          type: 'text',
+          content: {
+            en: 'From picking on the map, to the merchant page, to content verification — this is one complete decision chain for an out-of-town user.',
+            zh: '从地图选店，到商家承接，再到内容验证，是异地用户一条完整的决策链路。',
+          },
+        },
+        {
+          id: 'img-flow-triple',
+          type: 'image',
+          layout: 'triple',
+          srcs: [
+            '/assets/work/waimai-travel-map/map-picker.png',
+            '/assets/work/waimai-travel-map/merchant-page.png',
+            '/assets/work/waimai-travel-map/notes-page.png',
+          ],
+        },
+        {
+          id: 'vid-landing-anim',
+          type: 'image',
+          layout: 'wide',
+          src: '/assets/work/waimai-travel-map/landing-anim.mp4',
+        },
+        {
+          id: 'assets-title',
+          type: 'heading',
+          content: {
+            en: 'Building the Asset Library',
+            zh: '图形资产沉淀',
+          },
+        },
+        {
+          id: 'assets-text',
+          type: 'text',
+          content: {
+            en: 'The landmark graphics became a reusable asset library: version 1.0 used a straight-on view to get the flow running, version 2.0 moved to a tilted bird\'s-eye view for better spatial depth on the map, and the cherry-blossom season proved the library could extend to special seasons. What started as one-off needs turned into infrastructure that future out-of-town operations can keep reusing.',
+            zh: '地标图形沉淀成资产库：1.0 平视版本先上线跑通链路，2.0 迭代为侧俯视，地图空间感更好；樱花季验证了特殊季节扩展的可能性。资产库成为后续异地运营可以持续复用的基础设施。',
+          },
+        },
+        {
+          id: 'img-assets-1',
+          type: 'image',
+          layout: 'wide',
+          src: '/assets/work/waimai-travel-map/landmark-assets-1.0.png',
+        },
+        {
+          id: 'img-assets-2',
+          type: 'image',
+          layout: 'wide',
+          src: '/assets/work/waimai-travel-map/landmark-assets-2.0.png',
+        },
+        {
+          id: 'vid-sakura',
+          type: 'image',
+          layout: 'wide',
+          src: '/assets/work/waimai-travel-map/sakura-season.mp4',
+        },
+        {
+          id: 'reflection-title',
+          type: 'heading',
+          content: {
+            en: 'Reflections',
+            zh: '认知沉淀',
+          },
+        },
+        {
+          id: 'reflection-1',
+          type: 'text',
+          content: {
+            en: 'Emotional value is not decoration; it is the precondition of trust. Users first need to feel 「I really am in Chengdu」 before they will seriously read a merchant\'s local recommendations. Immersion goes first — only then does information get read.',
+            zh: '情绪价值不是装饰，是信任的前置条件。用户先感到「我确实在成都」，才会认真读这家店的本地人推荐；代入感先行，信息才有被阅读的机会。',
+          },
+        },
+        {
+          id: 'reflection-2',
+          type: 'text',
+          content: {
+            en: 'Being real matters more than having more. Out-of-town users are not short of supply; they are short of trustworthy filtering. Authoritative endorsement, rankings and UGC each carry a different layer of credibility — piling them together dilutes all of them.',
+            zh: '「真」比「多」重要。异地用户不缺供给，缺的是可信的筛选。权威认证、榜单、UGC 各自承担不同层级的背书，堆在一起反而互相稀释。',
+          },
+        },
+        {
+          id: 'reflection-3',
+          type: 'text',
+          content: {
+            en: 'A map is spatial storytelling, not just a search tool. Putting merchants back on real geographic coordinates yields three gains from one move: supply coverage, the desire to explore, and a sense of authenticity.',
+            zh: '地图是空间叙事，不只是检索工具。把商家放回真实地理坐标，供给覆盖、探索欲和真实感是同一个动作的三份收益。',
+          },
+        },
+        {
+          id: 'reflection-4',
+          type: 'text',
+          content: {
+            en: 'Build assets for operations, not illustrations for a requirement. With versioned iterations and seasonal extensions, the landmark library turns one-off needs into a capability that keeps paying off.',
+            zh: '为运营建资产，而不是为需求做图。地标资产库按版本迭代、按季节扩展，让一次性需求沉淀成可持续复用的能力。',
           },
         },
       ],
