@@ -1,10 +1,10 @@
 'use client'
 
-import { ArrowDown, ArrowLeft, ArrowUp, Camera, Check, GripVertical, Images, Loader2, Plus, Save, Sparkles, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowLeft, ArrowUp, Camera, Check, Crop, GripVertical, Images, Loader2, Plus, Save, Sparkles, Trash2 } from 'lucide-react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
-import { workItems, type Language, type LocalizedText, type WorkContentBlock, type WorkItem } from '@/content/portfolio'
+import { workItems, type Language, type LocalizedText, type MediaCrop, type WorkContentBlock, type WorkItem } from '@/content/portfolio'
 import { isVideoSrc } from '@/lib/media'
 
 function createId() {
@@ -105,6 +105,7 @@ function ImageSlot({
   className = '',
   mediaClassName = '',
   mediaBgClass = 'bg-surface',
+  crop = null,
 }: {
   src: string
   slug: string
@@ -115,9 +116,21 @@ function ImageSlot({
   mediaClassName?: string
   /** 媒体元素的兜底背景类，默认 surface 灰；窄版视频容器自带背景时传空 */
   mediaBgClass?: string
+  /** 显示区域裁剪：传入后按裁剪区域渲染媒体（与前台详情页一致） */
+  crop?: MediaCrop | null
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
+
+  const cropMediaStyle: React.CSSProperties | undefined = crop
+    ? {
+        position: 'absolute',
+        left: `${(-crop.x / crop.w) * 100}%`,
+        top: `${(-crop.y / crop.h) * 100}%`,
+        width: `${100 / crop.w}%`,
+        height: `${100 / crop.h}%`,
+      }
+    : undefined
 
   async function upload(file: File) {
     setUploading(true)
@@ -138,12 +151,28 @@ function ImageSlot({
   }
 
   return (
-    <div className={`group/image relative overflow-hidden border border-transparent transition-colors hover:border-black/20 focus-within:border-black/20 ${className}`}>
+    <div
+      className={`group/image relative overflow-hidden border border-transparent transition-colors hover:border-black/20 focus-within:border-black/20 ${className}`}
+      style={crop ? { aspectRatio: `${crop.w} / ${crop.h}` } : undefined}
+    >
       {src ? (
         isVideoSrc(src) ? (
-          <video src={src} autoPlay loop muted playsInline className={`block h-auto w-full object-contain ${mediaBgClass} ${mediaClassName}`} />
+          <video
+            src={src}
+            autoPlay
+            loop
+            muted
+            playsInline
+            style={crop ? cropMediaStyle : undefined}
+            className={crop ? 'max-w-none' : `block h-auto w-full object-contain ${mediaBgClass} ${mediaClassName}`}
+          />
         ) : (
-          <img src={src} alt="" className={`block h-auto w-full object-contain ${mediaBgClass} ${mediaClassName}`} />
+          <img
+            src={src}
+            alt=""
+            style={crop ? cropMediaStyle : undefined}
+            className={crop ? 'max-w-none' : `block h-auto w-full object-contain ${mediaBgClass} ${mediaClassName}`}
+          />
         )
       ) : (
         <button
@@ -175,6 +204,158 @@ function ImageSlot({
           if (file) upload(file)
         }}
       />
+    </div>
+  )
+}
+
+/** 裁剪框的最小尺寸（占素材宽/高的比例），防止误触产生不可见的微小选区 */
+const CROP_MIN = 0.05
+
+type CropDragMode = 'draw' | 'move' | 'nw' | 'ne' | 'sw' | 'se'
+
+/**
+ * 显示区域框选器：在素材上拖动框出要展示的范围，可整体移动、可拉四角调整。
+ * 只记录百分比坐标，不修改素材文件本身；视频/GIF/图片通用。
+ */
+function CropEditor({
+  src,
+  initial,
+  onApply,
+  onCancel,
+}: {
+  src: string
+  initial?: MediaCrop
+  onApply: (crop: MediaCrop | undefined) => void
+  onCancel: () => void
+}) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [rect, setRect] = useState<MediaCrop | null>(initial ?? null)
+  const dragRef = useRef<{ mode: CropDragMode; startX: number; startY: number; orig: MediaCrop | null } | null>(null)
+
+  function toPoint(clientX: number, clientY: number) {
+    const box = containerRef.current?.getBoundingClientRect()
+    if (!box) return { x: 0, y: 0 }
+    return {
+      x: Math.min(1, Math.max(0, (clientX - box.left) / box.width)),
+      y: Math.min(1, Math.max(0, (clientY - box.top) / box.height)),
+    }
+  }
+
+  function startDrag(event: React.PointerEvent, mode: CropDragMode) {
+    event.preventDefault()
+    event.stopPropagation()
+    const point = toPoint(event.clientX, event.clientY)
+    dragRef.current = { mode, startX: point.x, startY: point.y, orig: rect ? { ...rect } : null }
+    window.addEventListener('pointermove', handleDragMove)
+    window.addEventListener('pointerup', handleDragEnd, { once: true })
+  }
+
+  function handleDragMove(event: PointerEvent) {
+    const drag = dragRef.current
+    if (!drag) return
+    const point = toPoint(event.clientX, event.clientY)
+
+    if (drag.mode === 'draw') {
+      setRect({
+        x: Math.min(drag.startX, point.x),
+        y: Math.min(drag.startY, point.y),
+        w: Math.abs(point.x - drag.startX),
+        h: Math.abs(point.y - drag.startY),
+      })
+      return
+    }
+    if (!drag.orig) return
+    const origin = drag.orig
+
+    if (drag.mode === 'move') {
+      setRect({
+        ...origin,
+        x: Math.min(1 - origin.w, Math.max(0, origin.x + point.x - drag.startX)),
+        y: Math.min(1 - origin.h, Math.max(0, origin.y + point.y - drag.startY)),
+      })
+      return
+    }
+
+    let { x, y, w, h } = origin
+    if (drag.mode.includes('e')) w = Math.min(1 - x, Math.max(CROP_MIN, point.x - x))
+    if (drag.mode.includes('s')) h = Math.min(1 - y, Math.max(CROP_MIN, point.y - y))
+    if (drag.mode.includes('w')) {
+      const nextX = Math.min(origin.x + origin.w - CROP_MIN, Math.max(0, point.x))
+      w = origin.x + origin.w - nextX
+      x = nextX
+    }
+    if (drag.mode.includes('n')) {
+      const nextY = Math.min(origin.y + origin.h - CROP_MIN, Math.max(0, point.y))
+      h = origin.y + origin.h - nextY
+      y = nextY
+    }
+    setRect({ x, y, w, h })
+  }
+
+  function handleDragEnd() {
+    window.removeEventListener('pointermove', handleDragMove)
+    dragRef.current = null
+    // 过小的选区视为误触，直接丢弃
+    setRect((current) => (current && (current.w < CROP_MIN || current.h < CROP_MIN) ? null : current))
+  }
+
+  const valid = !!rect && rect.w >= CROP_MIN && rect.h >= CROP_MIN
+
+  return (
+    <div>
+      <p className="mb-2 text-[12px] text-muted">在素材上拖动框选要展示的区域；拖动选区可移动，拖动四角圆点可调整大小。</p>
+      <div
+        ref={containerRef}
+        onPointerDown={(event) => startDrag(event, 'draw')}
+        className="relative w-full cursor-crosshair touch-none select-none overflow-hidden rounded-[20px]"
+      >
+        {isVideoSrc(src) ? (
+          <video src={src} autoPlay loop muted playsInline className="pointer-events-none block w-full" />
+        ) : (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={src} alt="" draggable={false} className="pointer-events-none block w-full" />
+        )}
+        {valid && rect && (
+          <div
+            onPointerDown={(event) => startDrag(event, 'move')}
+            className="absolute cursor-move border-2 border-white/90 shadow-[0_0_0_9999px_rgba(0,0,0,0.55)]"
+            style={{ left: `${rect.x * 100}%`, top: `${rect.y * 100}%`, width: `${rect.w * 100}%`, height: `${rect.h * 100}%` }}
+          >
+            {(['nw', 'ne', 'sw', 'se'] as const).map((corner) => (
+              <span
+                key={corner}
+                onPointerDown={(event) => startDrag(event, corner)}
+                className="absolute h-3.5 w-3.5 rounded-full border border-black/20 bg-white shadow"
+                style={{
+                  left: corner.includes('w') ? '-7px' : undefined,
+                  right: corner.includes('e') ? '-7px' : undefined,
+                  top: corner.includes('n') ? '-7px' : undefined,
+                  bottom: corner.includes('s') ? '-7px' : undefined,
+                  cursor: corner === 'nw' || corner === 'se' ? 'nwse-resize' : 'nesw-resize',
+                }}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+      <div className="mt-3 flex items-center gap-4">
+        <button
+          type="button"
+          disabled={!valid}
+          onClick={() => onApply(valid && rect ? rect : undefined)}
+          className="inline-flex items-center gap-1.5 rounded-full bg-text-primary px-4 py-1.5 text-[12px] font-semibold text-bg transition-opacity disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          <Check size={12} strokeWidth={2.5} /> 应用裁剪
+        </button>
+        {initial && (
+          <button type="button" onClick={() => onApply(undefined)} className="text-[12px] font-semibold text-red-500 transition-colors hover:text-red-600">
+            清除裁剪
+          </button>
+        )}
+        <button type="button" onClick={onCancel} className="text-[12px] font-semibold text-muted transition-colors hover:text-text-primary">
+          取消
+        </button>
+      </div>
     </div>
   )
 }
@@ -287,6 +468,7 @@ export default function AdminWorkEditPage() {
   const [coverPrompt, setCoverPrompt] = useState('')
   const [coverRefs, setCoverRefs] = useState<string[]>([])
   const [coverGenerating, setCoverGenerating] = useState(false)
+  const [cropEditingIndex, setCropEditingIndex] = useState<number | null>(null)
 
   useEffect(() => {
     if (sourceItem) setItem(JSON.parse(JSON.stringify(sourceItem)))
@@ -417,8 +599,8 @@ export default function AdminWorkEditPage() {
     )))
   }
 
-  /** 更新 wide 块的视频展示设置（撑满 / 背景色） */
-  function updateWideVideo(index: number, partial: { videoFill?: boolean; videoBg?: string }) {
+  /** 更新 wide 块的展示设置（视频撑满 / 背景色 / 显示裁剪） */
+  function updateWideVideo(index: number, partial: { videoFill?: boolean; videoBg?: string; crop?: MediaCrop }) {
     updateBlocks((current) => current.map((block, blockIndex) => (
       blockIndex === index && block.type === 'image' && block.layout === 'wide' ? { ...block, ...partial } : block
     )))
@@ -736,20 +918,34 @@ export default function AdminWorkEditPage() {
 
               {block.type === 'image' && block.layout === 'wide' && (
                 <div className="mt-10 sm:mt-14">
-                  {isVideoSrc(block.src) && !block.videoFill ? (
+                  {cropEditingIndex === index && block.src ? (
+                    <CropEditor
+                      src={block.src}
+                      initial={block.crop}
+                      onApply={(crop) => {
+                        updateWideVideo(index, { crop })
+                        setCropEditingIndex(null)
+                      }}
+                      onCancel={() => setCropEditingIndex(null)}
+                    />
+                  ) : isVideoSrc(block.src) && !block.videoFill ? (
                     <div className="flex justify-center">
                       <div
-                        className={`aspect-[9/16] w-[calc((100%-1.5rem)/3)] overflow-hidden rounded-2xl sm:w-[calc((100%-2.5rem)/3)] ${block.videoBg ? '' : 'bg-surface'}`}
-                        style={block.videoBg ? { backgroundColor: block.videoBg } : undefined}
+                        className={`w-[calc((100%-1.5rem)/3)] overflow-hidden rounded-2xl sm:w-[calc((100%-2.5rem)/3)] ${block.crop ? '' : 'aspect-[9/16]'} ${block.videoBg ? '' : 'bg-surface'}`}
+                        style={{
+                          ...(block.crop ? { aspectRatio: `${block.crop.w} / ${block.crop.h}` } : {}),
+                          ...(block.videoBg ? { backgroundColor: block.videoBg } : {}),
+                        }}
                       >
                         <ImageSlot
                           src={block.src}
                           slug={slug}
                           onUpdate={(src) => updateWideImage(index, src)}
-                          className="h-full"
-                          mediaClassName="h-full"
+                          className={block.crop ? '' : 'h-full'}
+                          mediaClassName={block.crop ? '' : 'h-full'}
                           mediaBgClass=""
                           label="替换视频"
+                          crop={block.crop ?? null}
                         />
                       </div>
                     </div>
@@ -760,45 +956,67 @@ export default function AdminWorkEditPage() {
                       onUpdate={(src) => updateWideImage(index, src)}
                       className="rounded-[20px]"
                       label={isVideoSrc(block.src) ? '替换视频' : '替换横图'}
+                      crop={block.crop ?? null}
                     />
                   )}
 
-                  {isVideoSrc(block.src) && (
+                  {cropEditingIndex !== index && block.src && (
                     <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-2">
                       <button
                         type="button"
-                        onClick={() => updateWideVideo(index, { videoFill: !block.videoFill })}
+                        onClick={() => setCropEditingIndex(index)}
                         className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-muted transition-colors hover:text-text-primary"
                       >
-                        <span className={`flex h-3.5 w-3.5 items-center justify-center rounded-[4px] border transition-colors ${block.videoFill ? 'border-text-primary bg-text-primary text-bg' : 'border-muted/60'}`}>
-                          {block.videoFill && <Check size={11} strokeWidth={2.5} />}
-                        </span>
-                        撑满整行
+                        <Crop size={12} strokeWidth={2} />
+                        {block.crop ? '重新裁剪' : '裁剪显示区域'}
                       </button>
-                      {!block.videoFill && (
-                        <div className="flex items-center gap-2">
-                          <span className="text-[12px] font-semibold text-muted">背景</span>
-                          {VIDEO_BG_PRESETS.map((preset) => {
-                            const active = (block.videoBg || '') === preset.value
-                            return (
-                              <button
-                                key={preset.label}
-                                type="button"
-                                title={preset.label}
-                                onClick={() => updateWideVideo(index, { videoBg: preset.value || undefined })}
-                                className={`h-5 w-5 rounded-full border transition-transform ${preset.value ? '' : 'bg-surface'} ${active ? 'scale-110 border-transparent ring-2 ring-text-primary ring-offset-2 ring-offset-bg' : 'border-stroke hover:scale-105'}`}
-                                style={preset.value ? { backgroundColor: preset.value } : undefined}
+                      {block.crop && (
+                        <button
+                          type="button"
+                          onClick={() => updateWideVideo(index, { crop: undefined })}
+                          className="text-[12px] font-semibold text-red-500 transition-colors hover:text-red-600"
+                        >
+                          清除裁剪
+                        </button>
+                      )}
+                      {isVideoSrc(block.src) && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => updateWideVideo(index, { videoFill: !block.videoFill })}
+                            className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-muted transition-colors hover:text-text-primary"
+                          >
+                            <span className={`flex h-3.5 w-3.5 items-center justify-center rounded-[4px] border transition-colors ${block.videoFill ? 'border-text-primary bg-text-primary text-bg' : 'border-muted/60'}`}>
+                              {block.videoFill && <Check size={11} strokeWidth={2.5} />}
+                            </span>
+                            撑满整行
+                          </button>
+                          {!block.videoFill && (
+                            <div className="flex items-center gap-2">
+                              <span className="text-[12px] font-semibold text-muted">背景</span>
+                              {VIDEO_BG_PRESETS.map((preset) => {
+                                const active = (block.videoBg || '') === preset.value
+                                return (
+                                  <button
+                                    key={preset.label}
+                                    type="button"
+                                    title={preset.label}
+                                    onClick={() => updateWideVideo(index, { videoBg: preset.value || undefined })}
+                                    className={`h-5 w-5 rounded-full border transition-transform ${preset.value ? '' : 'bg-surface'} ${active ? 'scale-110 border-transparent ring-2 ring-text-primary ring-offset-2 ring-offset-bg' : 'border-stroke hover:scale-105'}`}
+                                    style={preset.value ? { backgroundColor: preset.value } : undefined}
+                                  />
+                                )
+                              })}
+                              <input
+                                type="color"
+                                value={block.videoBg || '#F5F4F0'}
+                                onChange={(event) => updateWideVideo(index, { videoBg: event.target.value })}
+                                className="h-5 w-8 cursor-pointer rounded border border-stroke bg-transparent"
+                                title="自定义背景色"
                               />
-                            )
-                          })}
-                          <input
-                            type="color"
-                            value={block.videoBg || '#F5F4F0'}
-                            onChange={(event) => updateWideVideo(index, { videoBg: event.target.value })}
-                            className="h-5 w-8 cursor-pointer rounded border border-stroke bg-transparent"
-                            title="自定义背景色"
-                          />
-                        </div>
+                            </div>
+                          )}
+                        </>
                       )}
                     </div>
                   )}

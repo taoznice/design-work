@@ -45,27 +45,62 @@ function ContentBlock({ block, language }: { block: WorkContentBlock; language: 
   if (block.type !== 'image') return null
 
   if (block.layout === 'wide') {
+    // 显示裁剪：容器按裁剪区域的比例裁切，媒体放大平移只露出框选部分，素材文件不变
+    const crop = block.crop
+    const cropMediaStyle: React.CSSProperties | undefined = crop
+      ? {
+          position: 'absolute',
+          left: `${(-crop.x / crop.w) * 100}%`,
+          top: `${(-crop.y / crop.h) * 100}%`,
+          width: `${100 / crop.w}%`,
+          height: `${100 / crop.h}%`,
+        }
+      : undefined
+
     if (isVideoSrc(block.src)) {
       // 撑满整行：与横图一致的全宽展示
       if (block.videoFill) {
         return (
           <figure className="pt-10 sm:pt-14">
-            <video src={block.src} autoPlay loop muted playsInline className="block w-full rounded-[20px] bg-surface" />
+            {crop ? (
+              <div className="relative w-full overflow-hidden rounded-[20px]" style={{ aspectRatio: `${crop.w} / ${crop.h}` }}>
+                <video src={block.src} autoPlay loop muted playsInline style={cropMediaStyle} className="max-w-none" />
+              </div>
+            ) : (
+              <video src={block.src} autoPlay loop muted playsInline className="block w-full rounded-[20px] bg-surface" />
+            )}
           </figure>
         )
       }
       // 默认：按三图布局单张宽度居中展示，容器背景色可选
       return (
         <figure className="flex justify-center pt-10 sm:pt-14">
-          <video
-            src={block.src}
-            autoPlay
-            loop
-            muted
-            playsInline
-            style={block.videoBg ? { backgroundColor: block.videoBg } : undefined}
-            className={`aspect-[9/16] w-[calc((100%-1.5rem)/3)] rounded-2xl object-contain sm:w-[calc((100%-2.5rem)/3)] ${block.videoBg ? '' : 'bg-surface'}`}
-          />
+          <div
+            className={`relative w-[calc((100%-1.5rem)/3)] overflow-hidden rounded-2xl sm:w-[calc((100%-2.5rem)/3)] ${crop ? '' : 'aspect-[9/16]'} ${block.videoBg ? '' : 'bg-surface'}`}
+            style={{
+              ...(crop ? { aspectRatio: `${crop.w} / ${crop.h}` } : {}),
+              ...(block.videoBg ? { backgroundColor: block.videoBg } : {}),
+            }}
+          >
+            <video
+              src={block.src}
+              autoPlay
+              loop
+              muted
+              playsInline
+              style={crop ? cropMediaStyle : undefined}
+              className={crop ? 'max-w-none' : 'h-full w-full object-contain'}
+            />
+          </div>
+        </figure>
+      )
+    }
+    if (crop) {
+      return (
+        <figure className="pt-10 sm:pt-14">
+          <div className="relative w-full overflow-hidden rounded-[20px]" style={{ aspectRatio: `${crop.w} / ${crop.h}` }}>
+            <img src={block.src} alt="" loading="lazy" style={cropMediaStyle} className="max-w-none" />
+          </div>
         </figure>
       )
     }

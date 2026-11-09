@@ -128,6 +128,14 @@ export const copy = {
   },
 } as const
 
+/** 媒体显示区域裁剪（0-1 分数坐标：x/y 为起点，w/h 为宽高），只影响展示，不修改素材文件本身 */
+export interface MediaCrop {
+  x: number
+  y: number
+  w: number
+  h: number
+}
+
 export type WorkContentBlock =
   | {
       id: string
@@ -143,6 +151,8 @@ export type WorkContentBlock =
       videoFill?: boolean
       /** 视频不撑满时容器的背景色（CSS 颜色值，缺省为默认灰） */
       videoBg?: string
+      /** 显示区域裁剪：只展示框选的部分，素材本身不变 */
+      crop?: MediaCrop
     }
   | {
       id: string
