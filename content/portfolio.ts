@@ -1138,6 +1138,14 @@ export const workItems: WorkItem[] = [
           layout: 'wide',
           videoFill: true,
           src: '/assets/work/waimai-travel-map/cover.mp4',
+          crop: {
+            x: 0.3899747731539424,
+            y: 0.03992538013011605,
+            w: 0.5924299906132666,
+            h: 0.9539062939422914,
+          },
+          cropRounded: true,
+          videoBg: '#FFFFFF',
         },
         {
           id: 'img-overview',
