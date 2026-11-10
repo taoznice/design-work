@@ -366,7 +366,7 @@ export const workItems: WorkItem[] = [
     },
     span: 'md:col-span-12',
     aspect: 'h-[340px] sm:h-[380px] md:h-[430px] lg:h-[520px]',
-    image: '/assets/work/waimai-homepage-traffic/cover-gen-1794207771802.png',
+    image: '/assets/work/waimai-homepage-traffic/list-modes.png',
     detail: {
       blocks: [
         {
@@ -1131,6 +1131,13 @@ export const workItems: WorkItem[] = [
             en: 'Every year, a huge number of users open the delivery app in a city they don\'t live in — business trips, vacations, going home for the holidays. The first phase of out-of-town atmosphere building landed positive results, but also exposed two structural problems: decision dimensions were too thin for users to trust unfamiliar merchants, and AOI-based supply limits left many scenarios unserved. This project moves the out-of-town experience forward with a food map, answering three progressive questions: how to make users realize the place 「has local character」, how to help them 「find it」 more easily, and how to make them believe it\'s 「the real thing」.',
             zh: '每年有大量用户在陌生的城市打开外卖：出差、旅行、假期回家。一期异地氛围建设拿到了正向反馈，但也暴露出两个结构性问题：决策维度单一，用户对陌生商家信任不足；AOI 的供给限制，让很多场景承接不住需求。这个项目在此之上推进异地场景地图，回答三个递进的问题：怎么让用户意识到异地「有特色」，怎么让用户更容易「找特色」，怎么让用户相信眼前是「真特色」。',
           },
+        },
+        {
+          id: 'vid-cover',
+          type: 'image',
+          layout: 'wide',
+          videoFill: true,
+          src: '/assets/work/waimai-travel-map/cover.mp4',
         },
         {
           id: 'img-overview',
